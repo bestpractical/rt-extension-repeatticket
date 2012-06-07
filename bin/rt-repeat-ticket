@@ -1,0 +1,45 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use lib '/opt/rt4/lib';
+
+use Getopt::Long;
+my %opt;
+GetOptions( \%opt, 'help|h', );
+
+if ( $opt{help} ) {
+    require Pod::Usage;
+    Pod::Usage::pod2usage( { verbose => 2 } );
+    exit;
+}
+
+require RT;
+RT::LoadConfig();
+RT::Init();
+
+use RT::Attributes;
+
+my $attrs = RT::Attributes->new( RT->SystemUser );
+$attrs->Limit( FIELD => 'Name', VALUE => 'RepeatTicketSettings' );
+
+use RT::Extension::RepeatTicket;
+my $today = DateTime->today( time_zone => RT->Config->Get('Timezone') );
+while ( my $attr = $attrs->Next ) {
+    RT::Extension::RepeatTicket::RepeatTicket( $attr, $today );
+}
+
+__END__
+
+=head1 NAME
+
+rt-repeat-ticket - repeat ticket
+
+=head1 SYNOPSIS
+
+    rt-repeat-ticket 
+
+=head1 DESCRIPTION
+
+This script will repeat ticket according to the recurrence rule.

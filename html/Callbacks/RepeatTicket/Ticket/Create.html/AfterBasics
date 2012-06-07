@@ -1,0 +1,6 @@
+<&| /Widgets/TitleBox, title => loc("Recurrence"), class=>'ticket-info-repeat-recurrence' &>
+<& /Ticket/Elements/EditRecurrence, ARGSRef => $ARGSRef, Initial => 1 &>
+</&>
+<%args>
+$ARGSRef
+</%args>

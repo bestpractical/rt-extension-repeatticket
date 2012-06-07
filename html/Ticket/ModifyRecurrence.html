@@ -1,0 +1,28 @@
+<& /Elements/Header, Title => loc('Modify recurrence for #[_1]', $TicketObj->Id) &>
+<& /Elements/Tabs &>
+
+<& /Elements/ListActions, actions => \@results &>
+
+<form method="post" action="ModifyRecurrence.html">
+<input type="hidden" class="hidden" name="id" value="<%$TicketObj->Id%>" />
+<&| /Widgets/TitleBox,title => loc('Modify recurrence for ticket # [_1]', $TicketObj->Id), class=> 'ticket-info-repeat' &>
+<& Elements/EditRecurrence, Ticket => $TicketObj &>
+</&>
+<& /Elements/Submit, Name => 'SubmitTicket', Label => loc('Save Changes') &>
+</form>
+
+
+<%INIT>
+
+my $TicketObj = LoadTicket($id);
+my @results;
+if ( $ARGS{SubmitTicket} ) {
+    my ( $ret, $message ) = RT::Extension::RepeatTicket::SetRepeatAttribute( $TicketObj, %ARGS );
+    push @results, $message;
+}
+
+</%INIT>
+
+<%ARGS>
+$id => undef
+</%ARGS>
