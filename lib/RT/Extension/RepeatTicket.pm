@@ -369,17 +369,19 @@ sub _RepeatTicket {
     $txns->OrderBy( FIELD => 'id', ORDER => 'ASC' );
     $txns->RowsPerPage(1);
     my $txn = $txns->First;
-
-    my $atts = RT::Attachments->new($RT::SystemUser);
+    my $atts = RT::Attachments->new(RT->SystemUser);
     $atts->OrderBy( FIELD => 'id', ORDER => 'ASC' );
     $atts->Limit( FIELD => 'TransactionId', VALUE => $txn->id );
     $atts->Limit( FIELD => 'Parent',        VALUE => 0 );
-    $atts->RowsPerPage(1);
-
     my $top = $atts->First;
-    if ($top) {
-        $args{MIMEObj} = $top->ContentAsMIME( Children => 1 );
-    }
+
+    # XXX no idea why this doesn't work:
+    # $args{MIMEObj} = $top->ContentAsMIME( Children => 1 ) );
+
+    my $parser = RT::EmailParser->new( RT->SystemUser );
+    $args{MIMEObj} =
+      $parser->ParseMIMEEntityFromScalar(
+        $top->ContentAsMIME( Children => 1 )->as_string );
 
     my $ticket = RT::Ticket->new( RT->SystemUser );
     return $ticket->Create(%args);
