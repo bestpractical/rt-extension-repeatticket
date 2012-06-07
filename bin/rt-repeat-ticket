@@ -27,7 +27,7 @@ $attrs->Limit( FIELD => 'Name', VALUE => 'RepeatTicketSettings' );
 use RT::Extension::RepeatTicket;
 my $today = DateTime->today( time_zone => RT->Config->Get('Timezone') );
 while ( my $attr = $attrs->Next ) {
-    RT::Extension::RepeatTicket::RepeatTicket( $attr, $today );
+    RT::Extension::RepeatTicket::Run( $attr, $today );
 }
 
 __END__
