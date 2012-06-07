@@ -383,7 +383,7 @@ sub _RepeatTicket {
       $parser->ParseMIMEEntityFromScalar(
         $top->ContentAsMIME( Children => 1 )->as_string );
 
-    my $ticket = RT::Ticket->new( RT->SystemUser );
+    my $ticket = RT::Ticket->new( $repeat_ticket->CurrentUser );
     return $ticket->Create(%args);
 }
 
