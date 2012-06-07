@@ -6,7 +6,6 @@ if ( $request_path =~ m{^/Ticket/} ) {
         my $obj = RT::Ticket->new( $session{'CurrentUser'} );
         $obj->Load($id);
 
-        my $actions = PageMenu()->child( actions => title => loc('Actions'), sort_order  => 95 );
         my $tabs = PageMenu();
 
         my %can = %{ $obj->CurrentUser->PrincipalObj->HasRights( Object => $obj ) };
