@@ -403,7 +403,7 @@ sunnavy, <sunnavy at bestpractical.com>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 sunnavy.
+Copyright 2012 Best Practical Solutions, LLC.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
