@@ -577,8 +577,8 @@ add RT::Extension::RepeatTicket to @Plugins in RT's etc/RT_SiteConfig.pm:
     Set( $RepeatTicketCoexistentNumber, 1 );
     Set( @Plugins, qw(... RT::Extension::RepeatTicket) );
 
-C<$RepeatTicketCoexistentNumber> only works for repeats that don't reply on
-the completion of previous tickets, in which case the config will be simply
+C<$RepeatTicketCoexistentNumber> only works for repeats that don't rely on the
+completion of previous tickets, in which case the config will be simply
 ignored.
 
 =head1 AUTHOR
