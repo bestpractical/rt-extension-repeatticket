@@ -27,7 +27,13 @@ $attrs->Limit( FIELD => 'Name', VALUE => 'RepeatTicketSettings' );
 use RT::Extension::RepeatTicket;
 my $today = DateTime->today( time_zone => RT->Config->Get('Timezone') );
 while ( my $attr = $attrs->Next ) {
-    RT::Extension::RepeatTicket::Run( $attr, $today );
+    next unless $attr->Content->{'repeat-enabled'};
+    $RT::Logger->info( 'Repeating ticket ' . $attr->Object->id );
+    my @ids = RT::Extension::RepeatTicket::Run( $attr, $today );
+    if ( @ids ) {
+        $RT::Logger->info(
+            'Repeated ticket ' . $attr->Object->id . ': ' . join ', ', @ids );
+    }
 }
 
 __END__

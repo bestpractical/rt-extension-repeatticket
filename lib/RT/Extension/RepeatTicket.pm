@@ -55,8 +55,9 @@ sub Run {
 
     my $checkday = shift
       || DateTime->today( time_zone => RT->Config->Get('Timezone') );
-    RepeatTicket( $attr, $checkday );
-    MaybeRepeatMore( $attr ); # create more to meet the coexistent number
+    my @ids = RepeatTicket( $attr, $checkday );
+    push @ids, MaybeRepeatMore( $attr ); # create more to meet the coexistent number
+    return @ids;
 }
 
 sub RepeatTicket {
@@ -284,10 +285,11 @@ sub RepeatTicket {
 
         if ($id) {
             $RT::Logger->info(
-                "Repeated Ticket $id for " . $repeat_ticket->id );
+                "Repeated ticket " . $repeat_ticket->id . ": $id" );
             $content->{'repeat-occurrences'} += $id;
             $content->{'last-ticket'} = $id;
             push @{ $content->{'tickets'} }, $id;
+            push @ids, $id;
         }
         else {
             $RT::Logger->error( "Failed to repeat ticket for "
@@ -526,9 +528,10 @@ sub MaybeRepeatMore {
         }
 
         for my $date (@dates) {
-            RepeatTicket( $attr, @dates );
+            push @ids, RepeatTicket( $attr, @dates );
         }
     }
+    return @ids;
 }
 
 sub CheckLastTicket {
