@@ -17,7 +17,7 @@ my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
         my %args = @_;
         my ( $ticket, @actions ) = $old_create_ticket->(@_);
         if ( $ticket && $args{'repeat-enabled'} ) {
-            my ( $attr ) = SetRepeatAttribute( $ticket, %args );
+            my ( $attr ) = SetRepeatAttribute( $ticket, %args, tickets => [ $ticket->id ] );
             MaybeRepeatMore( $attr );
         }
         return ( $ticket, @actions );
@@ -38,7 +38,7 @@ sub SetRepeatAttribute {
     my %old;
     %old = %{$old_attr->Content} if $old_attr;
 
-    my $content = { %old, %repeat_args, tickets => [ $ticket->id ] };
+    my $content = { %old, %repeat_args };
 
     $ticket->SetAttribute(
         Name    => 'RepeatTicketSettings',
