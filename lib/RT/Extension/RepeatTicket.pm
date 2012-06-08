@@ -577,7 +577,7 @@ sub MaybeRepeatMore {
                 my $span = $content->{'repeat-details-monthly-week-month'} || 1;
                 my $number = $content->{'repeat-details-monthly-week-number'}
                   || 1;
-                my $day = $content->{'repeat-details-monthly-week-day'} || 1;
+                my $day = $content->{'repeat-details-monthly-week-week'} || 0;
 
                 for ( 1 .. $total ) {
                     $date->add( months => $span );
@@ -613,7 +613,7 @@ sub MaybeRepeatMore {
 
                 my $number = $content->{'repeat-details-yearly-week-number'}
                   || 1;
-                my $day = $content->{'repeat-details-yearly-week-day'} || 1;
+                my $day = $content->{'repeat-details-yearly-week-week'} || 0;
 
                 for ( 1 .. $total ) {
                     $date->add( years => 1 );
