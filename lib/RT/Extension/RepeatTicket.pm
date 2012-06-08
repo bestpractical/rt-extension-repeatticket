@@ -197,7 +197,7 @@ sub Repeat {
                 }
 
                 @$weeks = sort @$weeks;
-                $due_date->truncate( to => 'week' );
+                $due_date->subtract( days => $due_date->day_of_week );
 
                 my ($after) = after { $_ == $date->day_of_week } @$weeks;
                 if ($after) {
@@ -546,18 +546,15 @@ sub MaybeRepeatMore {
 
                     if ( grep { $_ >= 0 && $_ <= 6 } @$weeks ) {
                         $date->add( weeks => $span );
-                        $date->truncate( to => 'week' );
+                        $date->subtract( days => $date->day_of_week );
 
                         while ( @dates < $total ) {
-                            if ( grep { $date->day_of_week == $_ } @$weeks ) {
-                                push @dates, $date->clone;
+                            for my $day ( sort @$weeks ) {
+                                push @dates, $date->clone->add( days => $day );
+                                last if @dates == $total;
                             }
 
-                            $date->add( days => 1 );
-
-                            if ( $date->day_of_week == 0 ) {
-                                $date->add( weeks => $span );
-                            }
+                            $date->add( weeks => $span );
                         }
                     }
                 }
@@ -673,8 +670,10 @@ sub CheckLastTicket {
         }
     }
     elsif ( $type eq 'week' ) {
-        my $created_week_start = $created->clone->truncate( to => 'week' );
-        my $check_week_start = $check->clone->truncate( to => 'week' );
+        my $created_week_start =
+          $created->clone->subtract( days => $created->day_of_week );
+        my $check_week_start =
+          $check->clone->subtract( days => $check->day_of_week );
 
         return 0 unless $check_week_start > $created_week_start;
 
