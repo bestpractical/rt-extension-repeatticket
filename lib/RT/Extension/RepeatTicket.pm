@@ -155,7 +155,7 @@ sub RepeatTicket {
                 next unless CheckLastTicket( $date, $last_ticket );
 
                 my $weeks = $content->{'repeat-details-weekly-weeks'};
-                next unless $weeks;
+                next unless defined $weeks;
 
                 $weeks = [$weeks] unless ref $weeks;
                 next unless grep { $_ == $checkday->day_of_week } @$weeks;
@@ -443,12 +443,11 @@ sub MaybeRepeatMore {
         elsif ( $content->{'repeat-type'} eq 'weekly' ) {
             if ( $content->{'repeat-details-weekly'} eq 'week' ) {
                 my $weeks = $content->{'repeat-details-weekly-weeks'};
-                if ($weeks) {
+                if (defined $weeks) {
+                    $weeks = [$weeks] unless ref $weeks;
                     while ( @dates < $total ) {
                         $date->add( days => 1 );
-                        $weeks = [$weeks] unless ref $weeks;
                         if ( grep { $date->day_of_week == $_ } @$weeks ) {
-
                             push @dates, $date->clone;
                         }
 
