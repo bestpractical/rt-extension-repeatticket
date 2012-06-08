@@ -23,7 +23,6 @@ my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
                 'last-ticket' => $ticket->id,
                 map { $_ => $args{$_} } grep { /^repeat/ } keys %args
             );
-            use Data::Dumper;
             MaybeRepeatMore( $attr );
         }
         return ( $ticket, @actions );
