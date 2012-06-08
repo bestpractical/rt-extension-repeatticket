@@ -8,6 +8,7 @@ our $VERSION = "0.01";
 use RT::Interface::Web;
 use DateTime;
 use RT::Date;
+use List::MoreUtils qw/after/;
 
 my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
 {
@@ -126,9 +127,8 @@ sub Repeat {
             if ( $content->{'repeat-details-daily'} eq 'day' ) {
                 my $span = $content->{'repeat-details-daily-day'} || 1;
                 my $date = $checkday->clone;
-                $date->subtract( days => $span );
 
-                unless ( CheckLastTicket( $date, $last_ticket ) ) {
+                unless ( CheckLastTicket( $date, $last_ticket, 'day', $span ) ) {
                     $RT::Logger->debug('Failed last-ticket date check');
                     next;
                 }
@@ -178,12 +178,7 @@ sub Repeat {
                 my $span = $content->{'repeat-details-weekly-week'} || 1;
                 my $date = $checkday->clone;
 
-                # go to the end of the week
-                $date->subtract(
-                    weeks => $span - 1,
-                    days  => $checkday->day_of_week
-                );
-                unless ( CheckLastTicket( $date, $last_ticket ) ) {
+                unless ( CheckLastTicket( $date, $last_ticket, 'week', $span ) ) {
                     $RT::Logger->debug('Failed last-ticket date check');
                     next;
                 }
@@ -201,10 +196,17 @@ sub Repeat {
                     next;
                 }
 
-                $due_date->add( weeks => $span );
+                @$weeks = sort @$weeks;
                 $due_date->subtract( days => $due_date->day_of_week );
-                my ($first) = sort @$weeks;
-                $due_date->add( days => $first ) if $first;
+
+                my ($after) = after { $_ == $date->day_of_week } @$weeks;
+                if ($after) {
+                    $due_date->add( days => $after );
+                }
+                else {
+                    $due_date->add( weeks => $span );
+                    $due_date->add( days  => $weeks->[0] );
+                }
             }
             elsif ( $content->{'repeat-details-weekly'} eq 'complete' ) {
                 unless (
@@ -237,8 +239,7 @@ sub Repeat {
 
                 my $span = $content->{'repeat-details-monthly-day-month'} || 1;
                 my $date = $checkday->clone;
-                $date->subtract( months => $span );
-                unless ( CheckLastTicket( $date, $last_ticket ) ) {
+                unless ( CheckLastTicket( $date, $last_ticket, 'month', $span ) ) {
                     $RT::Logger->debug('Failed last-ticket date check');
                     next;
                 }
@@ -264,8 +265,7 @@ sub Repeat {
 
                 my $span = $content->{'repeat-details-monthly-week-month'} || 1;
                 my $date = $checkday->clone;
-                $date->subtract( months => $span );
-                unless ( CheckLastTicket( $date, $last_ticket ) ) {
+                unless ( CheckLastTicket( $date, $last_ticket, 'month', $span ) ) {
                     $RT::Logger->debug('Failed last-ticket date check');
                     next;
                 }
@@ -525,7 +525,7 @@ sub MaybeRepeatMore {
             if ( $content->{'repeat-details-daily'} eq 'day' ) {
                 my $span = $content->{'repeat-details-daily-day'} || 1;
                 for ( 1 .. $total ) {
-                    $date->add( days => 1 );
+                    $date->add( days => $span );
                     push @dates, $date->clone;
                 }
             }
@@ -540,23 +540,23 @@ sub MaybeRepeatMore {
         elsif ( $content->{'repeat-type'} eq 'weekly' ) {
             if ( $content->{'repeat-details-weekly'} eq 'week' ) {
                 my $weeks = $content->{'repeat-details-weekly-weeks'};
-                if (defined $weeks && $weeks >= 0 && $weeks <= 6 ) {
+                if (defined $weeks ) {
                     $weeks = [$weeks] unless ref $weeks;
-                    $date->add( weeks => 1 );
-                    $date->subtract( days => $date->day_of_week );
-                    while ( @dates < $total ) {
-                        if ( grep { $date->day_of_week == $_ } @$weeks ) {
-                            push @dates, $date->clone;
-                        }
+                    if ( grep { $_ >= 0 && $_ <= 6 } @$weeks ) {
+                        while ( @dates < $total ) {
+                            $date->add( days => 1 );
+                            if ( grep { $date->day_of_week == $_ } @$weeks ) {
+                                push @dates, $date->clone;
+                            }
 
-                        if (   $date->day_of_week == 0
-                            && $content->{'repeat-details-weekly-week'} )
-                        {
-                            $date->add( weeks =>
-                                  $content->{'repeat-details-weekly-week'} -
-                                  1 );
+                            if (   $date->day_of_week == 0
+                                && $content->{'repeat-details-weekly-week'} )
+                            {
+                                $date->add( weeks =>
+                                      $content->{'repeat-details-weekly-week'} -
+                                      1 );
+                            }
                         }
-                        $date->add( days => 1 );
                     }
                 }
             }
@@ -639,6 +639,9 @@ sub MaybeRepeatMore {
 sub CheckLastTicket {
     my $date = shift;
     my $last_ticket = shift;
+    my $type = shift;
+    my $span = shift || 1;
+
     if ( $last_ticket->DueObj->Unix ) {
         my $due = $last_ticket->DueObj;
         $due->AddDays(-1);
@@ -650,7 +653,67 @@ sub CheckLastTicket {
         }
     }
 
-    if ( $date->ymd ge $last_ticket->CreatedObj->Date( Timezone => 'user' ) ) {
+    my $created_str = $last_ticket->CreatedObj->Date( Timezone => 'user' );
+    my $created = DateTime->from_epoch(
+        epoch     => $last_ticket->CreatedObj->Unix,
+        time_zone => RT->Config->Get('Timezone'),
+    );
+
+    my $check = $date->clone();
+
+    if ( $type eq 'day' ) {
+        $check->subtract( days => $span );
+    }
+    elsif ( $type eq 'week' ) {
+        my $created_week_start = $created->clone->subtract( days => $created->day_of_week );
+        my $check_week_start = $check->clone->subtract( days => $created->day_of_week );
+
+        return 0 unless $check_week_start >= $created_week_start;
+
+        if ( $check_week_start == $created_week_start ) {
+            if ( $check->day_of_week > $created->day_of_week ) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        }
+
+        return 1 if $span == 1;
+
+        if ( ( $check_week_start->epoch - $created_week_start->epoch )
+            % ( $span * 24 * 3600 * 7 ) )
+        {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+    }
+    elsif ( $type eq 'month' ) {
+        my $created_month_start = $created->clone->set( day => 1 );
+        my $check_month_start = $check->clone->set( day => 1 );
+
+        return 0 unless $check_month_start > $created_month_start;
+        return 1 if $span == 1;
+
+        if (
+            (
+                $check->year * 12 +
+                $check->month -
+                $created->year * 12 -
+                $created->month
+            ) % $span
+          )
+        {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+    }
+
+    if ( $check->ymd ge $created->ymd ) {
         return 1;
     }
     else {
