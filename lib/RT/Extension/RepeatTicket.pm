@@ -64,12 +64,12 @@ sub Run {
 
     my $checkday = shift
       || DateTime->today( time_zone => RT->Config->Get('Timezone') );
-    my @ids = RepeatTicket( $attr, $checkday );
+    my @ids = Repeat( $attr, $checkday );
     push @ids, MaybeRepeatMore( $attr ); # create more to meet the coexistent number
     return @ids;
 }
 
-sub RepeatTicket {
+sub Repeat {
     my $attr = shift;
     my @checkdays = @_;
     my @ids;
@@ -630,7 +630,7 @@ sub MaybeRepeatMore {
         }
 
         for my $date (@dates) {
-            push @ids, RepeatTicket( $attr, @dates );
+            push @ids, Repeat( $attr, @dates );
         }
     }
     return @ids;
