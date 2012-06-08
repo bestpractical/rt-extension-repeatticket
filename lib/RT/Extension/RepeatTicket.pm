@@ -291,7 +291,7 @@ sub RepeatTicket {
         if ($id) {
             $RT::Logger->info(
                 "Repeated ticket " . $repeat_ticket->id . ": $id" );
-            $content->{'repeat-occurrences'} += $id;
+            $content->{'repeat-occurrences'}++;
             $content->{'last-ticket'} = $id;
             push @{ $content->{'tickets'} }, $id;
             push @ids, $id;
