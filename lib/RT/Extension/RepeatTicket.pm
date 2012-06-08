@@ -17,7 +17,13 @@ my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
         my %args = @_;
         my ( $ticket, @actions ) = $old_create_ticket->(@_);
         if ( $ticket && $args{'repeat-enabled'} ) {
-            my ( $attr ) = SetRepeatAttribute( $ticket, %args, tickets => [ $ticket->id ] );
+            my ($attr) = SetRepeatAttribute(
+                $ticket,
+                'tickets' => [ $ticket->id ],
+                'last-ticket' => $ticket->id,
+                map { $_ => $args{$_} } grep { /^repeat/ } keys %args
+            );
+            use Data::Dumper;
             MaybeRepeatMore( $attr );
         }
         return ( $ticket, @actions );
@@ -31,7 +37,7 @@ sub SetRepeatAttribute {
     my %repeat_args = (
         'repeat-enabled'             => undef,
         'repeat-details-weekly-week' => undef,
-        map { $_ => $args{$_} } grep { /^repeat/ } keys %args
+         %args
     );
 
     my ( $old_attr ) = $ticket->Attributes->Named('RepeatTicketSettings');
@@ -100,13 +106,8 @@ sub RepeatTicket {
             next unless $checkday->ymd lt $date->Date;
         }
 
-        my $last_ticket;
-        if ( $content->{'last-ticket'} ) {
-            $last_ticket = RT::Ticket->new( RT->SystemUser );
-            $last_ticket->Load( $content->{'last-ticket'} );
-        }
-
-        $last_ticket ||= $repeat_ticket;
+        my $last_ticket = RT::Ticket->new( RT->SystemUser );
+        $last_ticket->Load( $content->{'last-ticket'} );
 
         my $due_date = $checkday->clone;
 
@@ -399,14 +400,14 @@ sub MaybeRepeatMore {
 
     my $co_number = RT->Config->Get('RepeatTicketCoexistentNumber') || 1;
     my $tickets = $content->{tickets} || [];
-    my $last_ticket = RT::Ticket->new( RT->SystemUser );
-    if ( $tickets->[-1] ) {
-        $last_ticket->Load($tickets->[-1]);
-    }
 
-    my $date = $last_ticket && $last_ticket->DueObj->Unix
+    my $last_ticket = RT::Ticket->new( RT->SystemUser );
+    $last_ticket->Load( $content->{'last-ticket'} );
+
+    my $date =
+      $last_ticket->DueObj->Unix
       ? DateTime->from_epoch(
-        epoch     => $last_ticket->DueObj->Unix - 3600*24,
+        epoch     => $last_ticket->DueObj->Unix - 3600 * 24,
         time_zone => RT->Config->Get('Timezone')
       )
       : DateTime->today( time_zone => RT->Config->Get('Timezone') );
