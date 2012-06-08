@@ -97,10 +97,10 @@ sub Repeat {
 
         if ( $content->{'repeat-end'} && $content->{'repeat-end'} eq 'number' )
         {
-            if ( $content->{'repeat-end-number'} >=
+            if ( $content->{'repeat-end-number'} <=
                 $content->{'repeat-occurrences'} )
             {
-                $RT::Logger->debug( 'Failed repeat-end-number check' );
+                $RT::Logger->debug('Failed repeat-end-number check');
                 last;
             }
         }
