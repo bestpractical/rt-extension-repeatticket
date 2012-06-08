@@ -338,7 +338,7 @@ sub Repeat {
                     next;
                 }
 
-                $due_date->add( year => 1 );
+                $due_date->add( years => 1 );
                 $due_date->truncate( to => 'month' );
                 $due_date->add( weeks => $number - 1 );
                 if ( $day > $due_date->day_of_week % 7 ) {
