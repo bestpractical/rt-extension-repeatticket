@@ -124,7 +124,7 @@ $number %>"
         <td>
             <input name="repeat-details-monthly" type="radio" value="day" <% ($ARGSRef->{'repeat-details-monthly'} || '') eq 'day' ?  'checked="checked"' : '' |n %> /><&|/l&>Day</&>
  <input name="repeat-details-monthly-day-day" type="text" size="4" value="<% $ARGSRef->{'repeat-details-monthly-day'} || 1 %>" /> <&|/l&>of every</&>
- <input name="repeat-details-monthly-day-month" type="text" size="4" value="<% $ARGSRef->{'repeat-details-monthly-month'} || 1 %>" /> <&|/l&>month(s)</&>
+ <input name="repeat-details-monthly-day-month" type="text" size="4" value="<% $ARGSRef->{'repeat-details-monthly-day-month'} || 1 %>" /> <&|/l&>month(s)</&>
         </td>
     </tr>
     <tr>
