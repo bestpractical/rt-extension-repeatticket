@@ -191,15 +191,15 @@ sub Repeat {
                 }
 
                 $weeks = [$weeks] unless ref $weeks;
-                unless ( grep { $_ == $checkday->day_of_week } @$weeks ) {
+                unless ( grep { $_ == $checkday->day_of_week % 7 } @$weeks ) {
                     $RT::Logger->debug('Failed weeks check');
                     next;
                 }
 
                 @$weeks = sort @$weeks;
-                $due_date->subtract( days => $due_date->day_of_week );
+                $due_date->subtract( days => $due_date->day_of_week % 7 );
 
-                my ($after) = after { $_ == $date->day_of_week } @$weeks;
+                my ($after) = after { $_ == $date->day_of_week % 7 } @$weeks;
                 if ($after) {
                     $due_date->add( days => $after );
                 }
@@ -248,7 +248,7 @@ sub Repeat {
             }
             elsif ( $content->{'repeat-details-monthly'} eq 'week' ) {
                 my $day = $content->{'repeat-details-monthly-week-week'} || 0;
-                unless ( $day == $checkday->day_of_week ) {
+                unless ( $day == $checkday->day_of_week % 7 ) {
                     $RT::Logger->debug('Failed day of week check');
                     next;
                 }
@@ -273,11 +273,12 @@ sub Repeat {
                 $due_date->add( months => $span );
                 $due_date->truncate( to => 'month' );
                 $due_date->add( weeks => $number - 1 );
-                if ( $day > $due_date->day_of_week ) {
-                    $due_date->add( days => $day - $due_date->day_of_week );
+                if ( $day > $due_date->day_of_week % 7 ) {
+                    $due_date->add( days => $day - $due_date->day_of_week % 7 );
                 }
-                elsif ( $day < $due_date->day_of_week ) {
-                    $due_date->add( days => 7 + $day - $due_date->day_of_week );
+                elsif ( $day < $due_date->day_of_week % 7 ) {
+                    $due_date->add(
+                        days => 7 + $day - $due_date->day_of_week % 7 );
                 }
             }
             elsif ( $content->{'repeat-details-monthly'} eq 'complete' ) {
@@ -318,7 +319,7 @@ sub Repeat {
             }
             elsif ( $content->{'repeat-details-yearly'} eq 'week' ) {
                 my $day = $content->{'repeat-details-yearly-week-week'} || 0;
-                unless ( $day == $checkday->day_of_week ) {
+                unless ( $day == $checkday->day_of_week % 7 ) {
                     $RT::Logger->debug('Failed day of week check');
                     next;
                 }
@@ -340,11 +341,12 @@ sub Repeat {
                 $due_date->add( year => 1 );
                 $due_date->truncate( to => 'month' );
                 $due_date->add( weeks => $number - 1 );
-                if ( $day > $due_date->day_of_week ) {
-                    $due_date->add( days => $day - $due_date->day_of_week );
+                if ( $day > $due_date->day_of_week % 7 ) {
+                    $due_date->add( days => $day - $due_date->day_of_week % 7 );
                 }
-                elsif ( $day < $due_date->day_of_week ) {
-                    $due_date->add( days => 7 + $day - $due_date->day_of_week );
+                elsif ( $day < $due_date->day_of_week % 7 ) {
+                    $due_date->add(
+                        days => 7 + $day - $due_date->day_of_week % 7 );
                 }
             }
             elsif ( $content->{'repeat-details-yearly'} eq 'complete' ) {
@@ -546,7 +548,7 @@ sub MaybeRepeatMore {
 
                     if ( grep { $_ >= 0 && $_ <= 6 } @$weeks ) {
                         $date->add( weeks => $span );
-                        $date->subtract( days => $date->day_of_week );
+                        $date->subtract( days => $date->day_of_week % 7 );
 
                         while ( @dates < $total ) {
                             for my $day ( sort @$weeks ) {
@@ -582,11 +584,11 @@ sub MaybeRepeatMore {
                     $date->truncate( to => 'month' );
                     $date->add( weeks => $number - 1 );
 
-                    if ( $day > $date->day_of_week ) {
-                        $date->add( days => $day - $date->day_of_week );
+                    if ( $day > $date->day_of_week % 7 ) {
+                        $date->add( days => $day - $date->day_of_week % 7 );
                     }
-                    elsif ( $day < $date->day_of_week ) {
-                        $date->add( days => 7 + $day - $date->day_of_week );
+                    elsif ( $day < $date->day_of_week % 7 ) {
+                        $date->add( days => 7 + $day - $date->day_of_week % 7 );
                     }
                     push @dates, $date->clone;
                 }
@@ -617,11 +619,11 @@ sub MaybeRepeatMore {
                     $date->add( years => 1 );
                     $date->truncate( to => 'month' );
                     $date->add( weeks => $number - 1 );
-                    if ( $day > $date->day_of_week ) {
-                        $date->add( days => $day - $date->day_of_week );
+                    if ( $day > $date->day_of_week % 7 ) {
+                        $date->add( days => $day - $date->day_of_week % 7  );
                     }
-                    elsif ( $day < $date->day_of_week ) {
-                        $date->add( days => 7 + $day - $date->day_of_week );
+                    elsif ( $day < $date->day_of_week % 7  ) {
+                        $date->add( days => 7 + $day - $date->day_of_week % 7  );
                     }
                     push @dates, $date->clone;
                 }
@@ -671,9 +673,9 @@ sub CheckLastTicket {
     }
     elsif ( $type eq 'week' ) {
         my $created_week_start =
-          $created->clone->subtract( days => $created->day_of_week );
+          $created->clone->subtract( days => $created->day_of_week % 7 );
         my $check_week_start =
-          $check->clone->subtract( days => $check->day_of_week );
+          $check->clone->subtract( days => $check->day_of_week % 7 );
 
         return 0 unless $check_week_start > $created_week_start;
 
