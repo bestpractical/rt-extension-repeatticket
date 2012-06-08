@@ -28,7 +28,11 @@ sub SetRepeatAttribute {
     my $ticket = shift;
     return 0 unless $ticket;
     my %args = @_;
-    my %repeat_args = map { $_ => $args{$_} } grep { /^repeat/ } keys %args;
+    my %repeat_args = (
+        'repeat-enabled'             => undef,
+        'repeat-details-weekly-week' => undef,
+        map { $_ => $args{$_} } grep { /^repeat/ } keys %args
+    );
 
     my ( $old_attr ) = $ticket->Attributes->Named('RepeatTicketSettings');
     my %old;
