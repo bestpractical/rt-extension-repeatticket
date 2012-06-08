@@ -77,8 +77,10 @@ sub RepeatTicket {
     my $content = $attr->Content;
     return unless $content->{'repeat-enabled'};
 
+    my $repeat_ticket = $attr->Object;
+
     for my $checkday (@checkdays) {
-        my $repeat_ticket = $attr->Object;
+        $RT::Logger->debug( 'checking ' . $checkday->ymd );
 
         if ( $content->{'repeat-start-date'} ) {
             my $date = RT::Date->new( RT->SystemUser );
@@ -86,14 +88,20 @@ sub RepeatTicket {
                 Format => 'unknown',
                 Value  => $content->{'repeat-start-date'},
             );
-            next unless $checkday->ymd ge $date->Date;
+            if ( $checkday->ymd lt $date->Date ) {
+                $RT::Logger->debug( 'Failed repeat-start-date check' );
+                next;
+            }
         }
 
         if ( $content->{'repeat-end'} && $content->{'repeat-end'} eq 'number' )
         {
-            return
-              unless $content->{'repeat-end-number'} >
-                  $content->{'repeat-occurrences'};
+            if ( $content->{'repeat-end-number'} >=
+                $content->{'repeat-occurrences'} )
+            {
+                $RT::Logger->debug( 'Failed repeat-end-number check' );
+                last;
+            }
         }
 
         if ( $content->{'repeat-end'} && $content->{'repeat-end'} eq 'date' ) {
@@ -102,7 +110,11 @@ sub RepeatTicket {
                 Format => 'unknown',
                 Value  => $content->{'repeat-end-date'},
             );
-            next unless $checkday->ymd lt $date->Date;
+
+            if ( $checkday->ymd gt $date->Date ) {
+                $RT::Logger->debug( 'Failed repeat-end-date check' );
+                next;
+            }
         }
 
         my $last_ticket = RT::Ticket->new( RT->SystemUser );
@@ -115,14 +127,22 @@ sub RepeatTicket {
                 my $span = $content->{'repeat-details-daily-day'} || 1;
                 my $date = $checkday->clone;
                 $date->subtract( days => $span );
-                next unless CheckLastTicket( $date, $last_ticket );
+
+                unless ( CheckLastTicket( $date, $last_ticket ) ) {
+                    $RT::Logger->debug('Failed last-ticket date check');
+                    next;
+                }
 
                 $due_date->add( days => $span );
             }
             elsif ( $content->{'repeat-details-daily'} eq 'weekday' ) {
-                return
-                  unless $checkday->day_of_week >= 1
-                      && $checkday->day_of_week <= 5;
+                unless ( $checkday->day_of_week >= 1
+                    && $checkday->day_of_week <= 5 )
+                {
+                    $RT::Logger->debug('Failed weekday check');
+                    next;
+                }
+
                 if ( $checkday->day_of_week == 5 ) {
                     $due_date->add( days => 3 );
                 }
@@ -131,14 +151,25 @@ sub RepeatTicket {
                 }
             }
             elsif ( $content->{'repeat-details-daily'} eq 'complete' ) {
-                return
-                  unless $last_ticket->QueueObj->Lifecycle->IsInactive(
-                    $last_ticket->Status );
+                unless (
+                    $last_ticket->QueueObj->Lifecycle->IsInactive(
+                        $last_ticket->Status
+                    )
+                  )
+                {
+                    $RT::Logger->debug('Failed complete status check');
+                    last;
+                }
+
                 my $resolved = $last_ticket->ResolvedObj;
                 my $date     = $checkday->clone;
                 $date->subtract(
                     days => $content->{'repeat-details-daily-complete'} || 1 );
-                next if $resolved->Date gt $date->ymd;
+
+                if ( $resolved->Date( Timezone => 'user' ) gt $date->ymd ) {
+                    $RT::Logger->debug('Failed complete date check');
+                    next;
+                }
             }
 
         }
@@ -152,13 +183,23 @@ sub RepeatTicket {
                     weeks => $span - 1,
                     days  => $checkday->day_of_week
                 );
-                next unless CheckLastTicket( $date, $last_ticket );
+                unless ( CheckLastTicket( $date, $last_ticket ) ) {
+                    $RT::Logger->debug('Failed last-ticket date check');
+                    next;
+                }
 
                 my $weeks = $content->{'repeat-details-weekly-weeks'};
-                next unless defined $weeks;
+
+                unless ( defined $weeks ) {
+                    $RT::Logger->debug('Failed weeks defined check');
+                    next;
+                }
 
                 $weeks = [$weeks] unless ref $weeks;
-                next unless grep { $_ == $checkday->day_of_week } @$weeks;
+                unless ( grep { $_ == $checkday->day_of_week } @$weeks ) {
+                    $RT::Logger->debug('Failed weeks check');
+                    next;
+                }
 
                 $due_date->add( weeks => $span );
                 $due_date->subtract( days => $due_date->day_of_week );
@@ -166,43 +207,68 @@ sub RepeatTicket {
                 $due_date->add( days => $first ) if $first;
             }
             elsif ( $content->{'repeat-details-weekly'} eq 'complete' ) {
-                return
-                  unless $last_ticket->QueueObj->Lifecycle->IsInactive(
-                    $last_ticket->Status );
+                unless (
+                    $last_ticket->QueueObj->Lifecycle->IsInactive(
+                        $last_ticket->Status
+                    )
+                  )
+                {
+                    $RT::Logger->debug('Failed complete status check');
+                    last;
+                }
                 my $resolved = $last_ticket->ResolvedObj;
                 my $date     = $checkday->clone;
                 $date->subtract(
                     weeks => $content->{'repeat-details-weekly-complete'}
                       || 1 );
-                next if $resolved->Date gt $date->ymd;
+                if ( $resolved->Date( Timezone => 'user' ) gt $date->ymd ) {
+                    $RT::Logger->debug('Failed complete date check');
+                    next;
+                }
             }
         }
         elsif ( $content->{'repeat-type'} eq 'monthly' ) {
             if ( $content->{'repeat-details-monthly'} eq 'day' ) {
                 my $day = $content->{'repeat-details-monthly-day-day'} || 1;
-                next unless $day == $checkday->day_of_month;
+                unless ( $day == $checkday->day_of_month ) {
+                    $RT::Logger->debug('Failed day of month check');
+                    next;
+                }
 
                 my $span = $content->{'repeat-details-monthly-day-month'} || 1;
                 my $date = $checkday->clone;
                 $date->subtract( months => $span );
-                next unless CheckLastTicket( $date, $last_ticket );
+                unless ( CheckLastTicket( $date, $last_ticket ) ) {
+                    $RT::Logger->debug('Failed last-ticket date check');
+                    next;
+                }
 
                 $due_date->add( months => $span );
             }
             elsif ( $content->{'repeat-details-monthly'} eq 'week' ) {
                 my $day = $content->{'repeat-details-monthly-week-week'} || 0;
-                next unless $day == $checkday->day_of_week;
+                unless ( $day == $checkday->day_of_week ) {
+                    $RT::Logger->debug('Failed day of week check');
+                    next;
+                }
 
                 my $number = $content->{'repeat-details-monthly-week-number'}
                   || 1;
-                return
-                  unless $number ==
-                      int( ( $checkday->day_of_month - 1 ) / 7 ) + 1;
+
+                unless (
+                    $number == int( ( $checkday->day_of_month - 1 ) / 7 ) + 1 )
+                {
+                    $RT::Logger->debug('Failed week number check');
+                    next;
+                }
 
                 my $span = $content->{'repeat-details-monthly-week-month'} || 1;
                 my $date = $checkday->clone;
                 $date->subtract( months => $span );
-                next unless CheckLastTicket( $date, $last_ticket );
+                unless ( CheckLastTicket( $date, $last_ticket ) ) {
+                    $RT::Logger->debug('Failed last-ticket date check');
+                    next;
+                }
 
                 $due_date->add( months => $span );
                 $due_date->subtract( days => $due_date->day_of_month - 1 );
@@ -215,38 +281,61 @@ sub RepeatTicket {
                 }
             }
             elsif ( $content->{'repeat-details-monthly'} eq 'complete' ) {
-                return
-                  unless $last_ticket->QueueObj->Lifecycle->IsInactive(
-                    $last_ticket->Status );
+                unless (
+                    $last_ticket->QueueObj->Lifecycle->IsInactive(
+                        $last_ticket->Status
+                    )
+                  )
+                {
+                    $RT::Logger->debug('Failed complete status check');
+                    last;
+                }
                 my $resolved = $last_ticket->ResolvedObj;
                 my $date     = $checkday->clone;
                 $date->subtract(
                     months => $content->{'repeat-details-monthly-complete'}
                       || 1 );
-                next if $resolved->Date gt $date->ymd;
+                if ( $resolved->Date( Timezone => 'user' ) gt $date->ymd ) {
+                    $RT::Logger->debug('Failed complete date check');
+                    next;
+                }
             }
         }
         elsif ( $content->{'repeat-type'} eq 'yearly' ) {
             if ( $content->{'repeat-details-yearly'} eq 'day' ) {
                 my $day = $content->{'repeat-details-yearly-day-day'} || 1;
-                next unless $day == $checkday->day_of_month;
+                unless ( $day == $checkday->day_of_month ) {
+                    $RT::Logger->debug('Failed day of month check');
+                    next;
+                }
 
                 my $month = $content->{'repeat-details-yearly-day-month'} || 1;
-                next unless $month == $checkday->month;
+                unless ( $month == $checkday->month ) {
+                    $RT::Logger->debug('Failed month check');
+                    next;
+                }
                 $due_date->add( years => 1 );
             }
             elsif ( $content->{'repeat-details-yearly'} eq 'week' ) {
                 my $day = $content->{'repeat-details-yearly-week-week'} || 0;
-                next unless $day == $checkday->day_of_week;
+                unless ( $day == $checkday->day_of_week ) {
+                    $RT::Logger->debug('Failed day of week check');
+                    next;
+                }
 
                 my $month = $content->{'repeat-details-yearly-week-month'} || 1;
-                next unless $month == $checkday->month;
+                unless ( $month == $checkday->month ) {
+                    $RT::Logger->debug('Failed month check');
+                    next;
+                }
 
                 my $number = $content->{'repeat-details-yearly-week-number'}
                   || 1;
-                return
-                  unless $number ==
-                      int( ( $checkday->day_of_month - 1 ) / 7 ) + 1;
+                unless ( $number ==
+                      int( ( $checkday->day_of_month - 1 ) / 7 ) + 1 ) {
+                    $RT::Logger->debug('Failed week number check');
+                    next;
+                }
 
                 $due_date->add( year => 1 );
                 $due_date->subtract( days => $due_date->day_of_month - 1 );
@@ -259,16 +348,24 @@ sub RepeatTicket {
                 }
             }
             elsif ( $content->{'repeat-details-yearly'} eq 'complete' ) {
-                return
-                  unless $last_ticket->QueueObj->Lifecycle->IsInactive(
-                    $last_ticket->Status );
+                unless (
+                    $last_ticket->QueueObj->Lifecycle->IsInactive(
+                        $last_ticket->Status
+                    )
+                  )
+                {
+                    $RT::Logger->debug('Failed complete status check');
+                    last;
+                }
                 my $resolved = $last_ticket->ResolvedObj;
                 my $date     = $checkday->clone;
                 $date->subtract(
                     years => $content->{'repeat-details-yearly-complete'}
                       || 1 );
-                return
-                  if $resolved->Date gt $date->ymd;
+                if ( $resolved->Date( Timezone => 'user' ) gt $date->ymd ) {
+                    $RT::Logger->debug('Failed complete date check');
+                    next;
+                }
             }
         }
 
