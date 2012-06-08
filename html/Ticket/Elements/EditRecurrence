@@ -93,9 +93,9 @@ size="4" value="<% $ARGSRef->{'repeat-details-weekly-week'} || 1 %>" /> <&|/l&>w
         <td>
             <input name="repeat-details-weekly-weeks" type="checkbox" value="<%
 $number %>" 
-% if ( $ARGSRef->{'repeat-details-weekly-weeks'} && 
+% if ( defined $ARGSRef->{'repeat-details-weekly-weeks'} && (
 %   ( ref $ARGSRef->{'repeat-details-weekly-weeks'} && grep { $_ == $number }
-%         @{$ARGSRef->{'repeat-details-weekly-weeks'}} ||
+%         @{$ARGSRef->{'repeat-details-weekly-weeks'}} ) ||
 %           ( $ARGSRef->{'repeat-details-weekly-weeks'} == $number ) ) ) {
     checked="checked"
 % }
