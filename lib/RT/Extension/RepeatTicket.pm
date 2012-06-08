@@ -443,7 +443,7 @@ sub MaybeRepeatMore {
         elsif ( $content->{'repeat-type'} eq 'weekly' ) {
             if ( $content->{'repeat-details-weekly'} eq 'week' ) {
                 my $weeks = $content->{'repeat-details-weekly-weeks'};
-                if (defined $weeks) {
+                if (defined $weeks && $weeks >= 0 && $weeks <= 6 ) {
                     $weeks = [$weeks] unless ref $weeks;
                     while ( @dates < $total ) {
                         $date->add( days => 1 );
