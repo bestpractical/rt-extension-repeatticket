@@ -542,8 +542,9 @@ sub MaybeRepeatMore {
                 my $weeks = $content->{'repeat-details-weekly-weeks'};
                 if (defined $weeks && $weeks >= 0 && $weeks <= 6 ) {
                     $weeks = [$weeks] unless ref $weeks;
+                    $date->add( weeks => 1 );
+                    $date->subtract( days => $date->day_of_week );
                     while ( @dates < $total ) {
-                        $date->add( days => 1 );
                         if ( grep { $date->day_of_week == $_ } @$weeks ) {
                             push @dates, $date->clone;
                         }
@@ -555,6 +556,7 @@ sub MaybeRepeatMore {
                                   $content->{'repeat-details-weekly-week'} -
                                   1 );
                         }
+                        $date->add( days => 1 );
                     }
                 }
             }
