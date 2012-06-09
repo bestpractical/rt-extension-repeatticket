@@ -763,6 +763,27 @@ C<$RepeatTicketCoexistentNumber> only works for repeats that don't rely on the
 completion of previous tickets, in which case the config will be simply
 ignored.
 
+=head1 Methods
+
+=head2 Run( RT::Attribute $attr, DateTime $checkday )
+
+Repeat the ticket if C<$checkday> meets the repeat settings.
+It also tries to repeat more to meet config C<RepeatTicketCoexistentNumber>.
+
+returns ids of new created tickets.
+
+=head2 Repeat ( RT::Attribute $attr, DateTime $checkday_1, DateTime $checkday_2, ... )
+
+Repeat the ticket for the check days that meet repeat settings.
+
+returns ids of new created tickets.
+
+=head2 MaybeRepeatMore ( RT::Attribute $attr )
+
+Try to repeat more tickets to meet the coexistent ticket number.
+
+Returns ids of new created tickets.
+
 =head1 AUTHOR
 
 sunnavy, <sunnavy at bestpractical.com>
