@@ -642,7 +642,6 @@ sub CheckLastTicket {
 
     if ( $last_ticket->DueObj->Unix ) {
         my $due = $last_ticket->DueObj;
-        $due->AddDays(-1);
         if ( $date->ymd ge $due->Date( Timezone => 'user' ) ) {
             return 1;
         }
