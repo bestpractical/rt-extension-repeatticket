@@ -131,7 +131,7 @@ $number %>"
         <td>
             <input name="repeat-details-monthly" type="radio" value="week" <% ($ARGSRef->{'repeat-details-monthly'} || '') eq 'week' ?  'checked="checked"' : '' |n %> /><&|/l&>The</&>
 <select name="repeat-details-monthly-week-number">
-% for my $number ( 1 .. 4 ) {
+% for my $number ( 1 .. 5 ) {
     <option value="<% $number %>" <%($ARGSRef->{'repeat-details-monthly-week-number'} || '') eq $number ?  'selected="selected"' : '' |n %>><% loc($week_number_labels[$number-1]) %></option>
 % }
 </select>
@@ -171,7 +171,7 @@ name="repeat-details-monthly-complete" type="text" size="4" value="<% $ARGSRef->
         <td>
             <input name="repeat-details-yearly" type="radio" value="week" <% ($ARGSRef->{'repeat-details-yearly'} || '') eq 'week' ?  'checked="checked"' : '' |n %> /><&|/l&>The</&>
 <select name="repeat-details-yearly-week-number">
-% for my $number ( 1 .. 4 ) {
+% for my $number ( 1 .. 5 ) {
     <option value="<% $number %>" <%($ARGSRef->{'repeat-details-yearly-week-number'} || '') eq $number ?  'selected="selected"' : '' |n %>><% loc($week_number_labels[$number-1]) %></option>
 % }
 </select>
@@ -242,7 +242,7 @@ name="repeat-details-monthly-complete" type="text" size="4" value="<% $ARGSRef->
 
 <%init>
 my @week_labels = qw/Sunday Monday Tuesday Wedsenday Thursday Friday Saturday/; # loc
-my @week_number_labels = qw/First Second Third Fourth/; # loc
+my @week_number_labels = qw/First Second Third Fourth Last/; # loc
 my @month_labels = qw/January February March April  May June July August September October November December/; # loc
 
 if ( $Ticket ) {

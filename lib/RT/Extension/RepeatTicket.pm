@@ -256,9 +256,7 @@ sub Repeat {
                 my $number = $content->{'repeat-details-monthly-week-number'}
                   || 1;
 
-                unless (
-                    $number == int( ( $checkday->day_of_month - 1 ) / 7 ) + 1 )
-                {
+                unless ( CheckWeekNumber( $checkday, $number ) ) {
                     $RT::Logger->debug('Failed week number check');
                     next;
                 }
@@ -332,8 +330,7 @@ sub Repeat {
 
                 my $number = $content->{'repeat-details-yearly-week-number'}
                   || 1;
-                unless ( $number ==
-                      int( ( $checkday->day_of_month - 1 ) / 7 ) + 1 ) {
+                unless ( CheckWeekNumber( $checkday, $number ) ) {
                     $RT::Logger->debug('Failed week number check');
                     next;
                 }
@@ -713,6 +710,29 @@ sub CheckLastTicket {
         }
     }
 
+}
+
+sub CheckWeekNumber {
+    my $date = shift;
+    my $number = shift || 1;
+    if ( $number == 5 ) {    # last one, not just 5th
+        my $next_month =
+          $date->clone->truncate( to => 'month' )->add( months => 1 );
+        if ( $next_month->epoch - $date->epoch <= 24 * 3600 * 7 ) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+    else {
+        if ( $number == int( ( $date->day_of_month - 1 ) / 7 ) + 1 ) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
 }
 
 1;
