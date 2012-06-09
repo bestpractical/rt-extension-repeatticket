@@ -755,12 +755,14 @@ To install this module, run the following commands:
 
 add RT::Extension::RepeatTicket to @Plugins in RT's etc/RT_SiteConfig.pm:
 
-    Set( $RepeatTicketCoexistentNumber, 1 );
     Set( @Plugins, qw(... RT::Extension::RepeatTicket) );
+    Set( $RepeatTicketCoexistentNumber, 1 );
 
 C<$RepeatTicketCoexistentNumber> only works for repeats that don't rely on the
 completion of previous tickets, in which case the config will be simply
 ignored.
+
+add bin/rt-repeat-ticket to the daily cron job.
 
 =head1 Methods
 
@@ -769,19 +771,25 @@ ignored.
 Repeat the ticket if C<$checkday> meets the repeat settings.
 It also tries to repeat more to meet config C<RepeatTicketCoexistentNumber>.
 
-returns ids of new created tickets.
+Return ids of new created tickets.
 
 =head2 Repeat ( RT::Attribute $attr, DateTime $checkday_1, DateTime $checkday_2, ... )
 
 Repeat the ticket for the check days that meet repeat settings.
 
-returns ids of new created tickets.
+Return ids of new created tickets.
 
 =head2 MaybeRepeatMore ( RT::Attribute $attr )
 
 Try to repeat more tickets to meet the coexistent ticket number.
 
-Returns ids of new created tickets.
+Return ids of new created tickets.
+
+=head2 SetRepeatAttribute ( RT::Ticket $ticket, %args )
+
+Save %args to the ticket's "RepeatTicketSettings" attribute.
+
+Return ( RT::Attribute, UPDATE MESSAGE )
 
 =head1 AUTHOR
 
