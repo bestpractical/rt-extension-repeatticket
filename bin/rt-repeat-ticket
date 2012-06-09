@@ -7,7 +7,7 @@ use lib '/opt/rt4/lib';
 
 use Getopt::Long;
 my %opt;
-GetOptions( \%opt, 'help|h', );
+GetOptions( \%opt, 'help|h', 'date=s' );
 
 if ( $opt{help} ) {
     require Pod::Usage;
@@ -20,16 +20,37 @@ RT::LoadConfig();
 RT::Init();
 
 use RT::Attributes;
+use RT::Date;
 
 my $attrs = RT::Attributes->new( RT->SystemUser );
 $attrs->Limit( FIELD => 'Name', VALUE => 'RepeatTicketSettings' );
 
 use RT::Extension::RepeatTicket;
-my $today = DateTime->today( time_zone => RT->Config->Get('Timezone') );
+my $date;
+if ( $opt{date} ) {
+    my $d = RT::Date->new( RT->SystemUser );
+    $d->Set(
+        Format => 'unknown',
+        Value  => $opt{date},
+    );
+
+    # can't use ->Unix because timezone issue
+    # where $d->Unix could return a small seconds after 1970-01-01 00:00:00 UTC
+    # if date parse fails
+    if ( $d->Date ne '1970-01-01' ) {
+        $date = DateTime->from_epoch(
+            epoch     => $d->Unix,
+            time_zone => RT->Config->Get('Timezone'),
+        );
+    }
+}
+
+$date ||= DateTime->today( time_zone => RT->Config->Get('Timezone') );
+
 while ( my $attr = $attrs->Next ) {
     next unless $attr->Content->{'repeat-enabled'};
     $RT::Logger->info( 'Repeating ticket ' . $attr->Object->id );
-    my @ids = RT::Extension::RepeatTicket::Run( $attr, $today );
+    my @ids = RT::Extension::RepeatTicket::Run( $attr, $date );
     if ( @ids ) {
         $RT::Logger->info(
             'Repeated ticket ' . $attr->Object->id . ': ' . join ', ', @ids );
