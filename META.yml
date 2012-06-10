@@ -1,5 +1,5 @@
 ---
-abstract: 'The great new RT::Extension::RepeatTicket!'
+abstract: 'Repeat tickets based on schedule'
 author:
   - 'sunnavy, <sunnavy at bestpractical.com>'
 build_requires:

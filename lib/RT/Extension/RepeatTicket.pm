@@ -758,7 +758,7 @@ __END__
 
 =head1 NAME
 
-RT::Extension::RepeatTicket - The great new RT::Extension::RepeatTicket!
+RT::Extension::RepeatTicket - Repeat tickets based on schedule
 
 =head1 VERSION
 
