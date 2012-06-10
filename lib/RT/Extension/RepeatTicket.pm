@@ -151,22 +151,18 @@ sub Repeat {
                 }
             }
             elsif ( $content->{'repeat-details-daily'} eq 'complete' ) {
-                unless (
-                    $last_ticket->QueueObj->Lifecycle->IsInactive(
-                        $last_ticket->Status
-                    )
-                  )
-                {
+                unless ( CheckCompleteStatus( $last_ticket ) ) {
                     $RT::Logger->debug('Failed complete status check');
                     last;
                 }
 
-                my $resolved = $last_ticket->ResolvedObj;
-                my $date     = $checkday->clone;
-                $date->subtract(
-                    days => $content->{'repeat-details-daily-complete'} || 1 );
-
-                if ( $resolved->Date( Timezone => 'user' ) gt $date->ymd ) {
+                unless (
+                    CheckCompleteDate(
+                        $checkday, $last_ticket, 'day',
+                        $content->{'repeat-details-daily-complete'}
+                    )
+                  )
+                {
                     $RT::Logger->debug('Failed complete date check');
                     next;
                 }
@@ -209,21 +205,18 @@ sub Repeat {
                 }
             }
             elsif ( $content->{'repeat-details-weekly'} eq 'complete' ) {
-                unless (
-                    $last_ticket->QueueObj->Lifecycle->IsInactive(
-                        $last_ticket->Status
-                    )
-                  )
-                {
+                unless ( CheckCompleteStatus( $last_ticket ) ) {
                     $RT::Logger->debug('Failed complete status check');
                     last;
                 }
-                my $resolved = $last_ticket->ResolvedObj;
-                my $date     = $checkday->clone;
-                $date->subtract(
-                    weeks => $content->{'repeat-details-weekly-complete'}
-                      || 1 );
-                if ( $resolved->Date( Timezone => 'user' ) gt $date->ymd ) {
+
+                unless (
+                    CheckCompleteDate(
+                        $checkday, $last_ticket, 'week',
+                        $content->{'repeat-details-weekly-complete'}
+                    )
+                  )
+                {
                     $RT::Logger->debug('Failed complete date check');
                     next;
                 }
@@ -280,21 +273,18 @@ sub Repeat {
                 }
             }
             elsif ( $content->{'repeat-details-monthly'} eq 'complete' ) {
-                unless (
-                    $last_ticket->QueueObj->Lifecycle->IsInactive(
-                        $last_ticket->Status
-                    )
-                  )
-                {
+                unless ( CheckCompleteStatus( $last_ticket ) ) {
                     $RT::Logger->debug('Failed complete status check');
                     last;
                 }
-                my $resolved = $last_ticket->ResolvedObj;
-                my $date     = $checkday->clone;
-                $date->subtract(
-                    months => $content->{'repeat-details-monthly-complete'}
-                      || 1 );
-                if ( $resolved->Date( Timezone => 'user' ) gt $date->ymd ) {
+
+                unless (
+                    CheckCompleteDate(
+                        $checkday, $last_ticket, 'month',
+                        $content->{'repeat-details-monthly-complete'}
+                    )
+                  )
+                {
                     $RT::Logger->debug('Failed complete date check');
                     next;
                 }
@@ -347,21 +337,18 @@ sub Repeat {
                 }
             }
             elsif ( $content->{'repeat-details-yearly'} eq 'complete' ) {
-                unless (
-                    $last_ticket->QueueObj->Lifecycle->IsInactive(
-                        $last_ticket->Status
-                    )
-                  )
-                {
+                unless ( CheckCompleteStatus( $last_ticket ) ) {
                     $RT::Logger->debug('Failed complete status check');
                     last;
                 }
-                my $resolved = $last_ticket->ResolvedObj;
-                my $date     = $checkday->clone;
-                $date->subtract(
-                    years => $content->{'repeat-details-yearly-complete'}
-                      || 1 );
-                if ( $resolved->Date( Timezone => 'user' ) gt $date->ymd ) {
+
+                unless (
+                    CheckCompleteDate(
+                        $checkday, $last_ticket, 'year',
+                        $content->{'repeat-details-yearly-complete'}
+                    )
+                  )
+                {
                     $RT::Logger->debug('Failed complete date check');
                     next;
                 }
@@ -732,6 +719,31 @@ sub CheckWeekNumber {
             return 0;
         }
     }
+}
+
+sub CheckCompleteStatus {
+    my $ticket = shift;
+    return 1 if $ticket->QueueObj->Lifecycle->IsInactive( $ticket->Status );
+    return 0;
+}
+
+sub CheckCompleteDate {
+    my $checkday = shift;
+    my $ticket   = shift;
+    my $type     = shift || 'day';
+    my $span     = shift;
+    $span = 1 unless defined $span;
+
+    my $resolved = $ticket->ResolvedObj;
+    my $date     = $checkday->clone;
+    if ($span) {
+        $date->subtract( "${type}s" => $span );
+    }
+
+    return 0
+      if $resolved->Date( Timezone => 'user' ) gt $date->ymd;
+
+    return 1;
 }
 
 1;
