@@ -20,11 +20,11 @@ my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
         if ( $ticket && $args{'repeat-enabled'} ) {
             my ($attr) = SetRepeatAttribute(
                 $ticket,
-                'tickets' => [ $ticket->id ],
+                'tickets'     => [ $ticket->id ],
                 'last-ticket' => $ticket->id,
                 map { $_ => $args{$_} } grep { /^repeat/ } keys %args
             );
-            MaybeRepeatMore( $attr );
+            MaybeRepeatMore($attr);
         }
         return ( $ticket, @actions );
     };
@@ -33,16 +33,16 @@ my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
 sub SetRepeatAttribute {
     my $ticket = shift;
     return 0 unless $ticket;
-    my %args = @_;
+    my %args        = @_;
     my %repeat_args = (
         'repeat-enabled'              => undef,
         'repeat-details-weekly-weeks' => undef,
-         %args
+        %args
     );
 
-    my ( $old_attr ) = $ticket->Attributes->Named('RepeatTicketSettings');
+    my ($old_attr) = $ticket->Attributes->Named('RepeatTicketSettings');
     my %old;
-    %old = %{$old_attr->Content} if $old_attr;
+    %old = %{ $old_attr->Content } if $old_attr;
 
     my $content = { %old, %repeat_args };
 
@@ -51,7 +51,7 @@ sub SetRepeatAttribute {
         Content => $content,
     );
 
-    my ( $attr ) = $ticket->Attributes->Named('RepeatTicketSettings');
+    my ($attr) = $ticket->Attributes->Named('RepeatTicketSettings');
 
     return ( $attr, $ticket->loc('Recurrence updated') );    # loc
 }
@@ -59,19 +59,20 @@ sub SetRepeatAttribute {
 use RT::Ticket;
 
 sub Run {
-    my $attr = shift;
+    my $attr    = shift;
     my $content = $attr->Content;
     return unless $content->{'repeat-enabled'};
 
     my $checkday = shift
       || DateTime->today( time_zone => RT->Config->Get('Timezone') );
     my @ids = Repeat( $attr, $checkday );
-    push @ids, MaybeRepeatMore( $attr ); # create more to meet the coexistent number
+    push @ids,
+      MaybeRepeatMore($attr);    # create more to meet the coexistent number
     return @ids;
 }
 
 sub Repeat {
-    my $attr = shift;
+    my $attr      = shift;
     my @checkdays = @_;
     my @ids;
 
@@ -90,7 +91,7 @@ sub Repeat {
                 Value  => $content->{'repeat-start-date'},
             );
             if ( $checkday->ymd lt $date->Date ) {
-                $RT::Logger->debug( 'Failed repeat-start-date check' );
+                $RT::Logger->debug('Failed repeat-start-date check');
                 next;
             }
         }
@@ -113,7 +114,7 @@ sub Repeat {
             );
 
             if ( $checkday->ymd gt $date->Date ) {
-                $RT::Logger->debug( 'Failed repeat-end-date check' );
+                $RT::Logger->debug('Failed repeat-end-date check');
                 next;
             }
         }
@@ -128,7 +129,8 @@ sub Repeat {
                 my $span = $content->{'repeat-details-daily-day'} || 1;
                 my $date = $checkday->clone;
 
-                unless ( CheckLastTicket( $date, $last_ticket, 'day', $span ) ) {
+                unless ( CheckLastTicket( $date, $last_ticket, 'day', $span ) )
+                {
                     $RT::Logger->debug('Failed last-ticket date check');
                     next;
                 }
@@ -151,7 +153,7 @@ sub Repeat {
                 }
             }
             elsif ( $content->{'repeat-details-daily'} eq 'complete' ) {
-                unless ( CheckCompleteStatus( $last_ticket ) ) {
+                unless ( CheckCompleteStatus($last_ticket) ) {
                     $RT::Logger->debug('Failed complete status check');
                     last;
                 }
@@ -174,7 +176,8 @@ sub Repeat {
                 my $span = $content->{'repeat-details-weekly-week'} || 1;
                 my $date = $checkday->clone;
 
-                unless ( CheckLastTicket( $date, $last_ticket, 'week', $span ) ) {
+                unless ( CheckLastTicket( $date, $last_ticket, 'week', $span ) )
+                {
                     $RT::Logger->debug('Failed last-ticket date check');
                     next;
                 }
@@ -205,7 +208,7 @@ sub Repeat {
                 }
             }
             elsif ( $content->{'repeat-details-weekly'} eq 'complete' ) {
-                unless ( CheckCompleteStatus( $last_ticket ) ) {
+                unless ( CheckCompleteStatus($last_ticket) ) {
                     $RT::Logger->debug('Failed complete status check');
                     last;
                 }
@@ -232,7 +235,9 @@ sub Repeat {
 
                 my $span = $content->{'repeat-details-monthly-day-month'} || 1;
                 my $date = $checkday->clone;
-                unless ( CheckLastTicket( $date, $last_ticket, 'month', $span ) ) {
+                unless (
+                    CheckLastTicket( $date, $last_ticket, 'month', $span ) )
+                {
                     $RT::Logger->debug('Failed last-ticket date check');
                     next;
                 }
@@ -256,7 +261,9 @@ sub Repeat {
 
                 my $span = $content->{'repeat-details-monthly-week-month'} || 1;
                 my $date = $checkday->clone;
-                unless ( CheckLastTicket( $date, $last_ticket, 'month', $span ) ) {
+                unless (
+                    CheckLastTicket( $date, $last_ticket, 'month', $span ) )
+                {
                     $RT::Logger->debug('Failed last-ticket date check');
                     next;
                 }
@@ -273,7 +280,7 @@ sub Repeat {
                 }
             }
             elsif ( $content->{'repeat-details-monthly'} eq 'complete' ) {
-                unless ( CheckCompleteStatus( $last_ticket ) ) {
+                unless ( CheckCompleteStatus($last_ticket) ) {
                     $RT::Logger->debug('Failed complete status check');
                     last;
                 }
@@ -337,7 +344,7 @@ sub Repeat {
                 }
             }
             elsif ( $content->{'repeat-details-yearly'} eq 'complete' ) {
-                unless ( CheckCompleteStatus( $last_ticket ) ) {
+                unless ( CheckCompleteStatus($last_ticket) ) {
                     $RT::Logger->debug('Failed complete status check');
                     last;
                 }
@@ -394,7 +401,7 @@ sub _RepeatTicket {
     my $repeat_ticket = shift;
     return unless $repeat_ticket;
 
-    my %args  = @_;
+    my %args   = @_;
     my $repeat = {
         Queue           => $repeat_ticket->Queue,
         Requestor       => join( ',', $repeat_ticket->RequestorAddresses ),
@@ -457,8 +464,8 @@ sub _RepeatTicket {
     $txns->Limit( FIELD => 'Type', VALUE => 'Create' );
     $txns->OrderBy( FIELD => 'id', ORDER => 'ASC' );
     $txns->RowsPerPage(1);
-    my $txn = $txns->First;
-    my $atts = RT::Attachments->new(RT->SystemUser);
+    my $txn  = $txns->First;
+    my $atts = RT::Attachments->new( RT->SystemUser );
     $atts->OrderBy( FIELD => 'id', ORDER => 'ASC' );
     $atts->Limit( FIELD => 'TransactionId', VALUE => $txn->id );
     $atts->Limit( FIELD => 'Parent',        VALUE => 0 );
@@ -477,7 +484,7 @@ sub _RepeatTicket {
 }
 
 sub MaybeRepeatMore {
-    my $attr     = shift;
+    my $attr    = shift;
     my $content = $attr->Content;
 
     my $co_number = RT->Config->Get('RepeatTicketCoexistentNumber') || 1;
@@ -501,7 +508,7 @@ sub MaybeRepeatMore {
     } @$tickets;
 
     $content->{tickets} = $tickets;
-    $attr->SetContent( $content );
+    $attr->SetContent($content);
 
     my @ids;
     if ( $co_number > @$tickets ) {
@@ -527,7 +534,7 @@ sub MaybeRepeatMore {
             if ( $content->{'repeat-details-weekly'} eq 'week' ) {
                 my $span = $content->{'repeat-details-weekly-week'} || 1;
                 my $weeks = $content->{'repeat-details-weekly-weeks'};
-                if (defined $weeks ) {
+                if ( defined $weeks ) {
                     $weeks = [$weeks] unless ref $weeks;
 
                     if ( grep { $_ >= 0 && $_ <= 6 } @$weeks ) {
@@ -604,10 +611,10 @@ sub MaybeRepeatMore {
                     $date->truncate( to => 'month' );
                     $date->add( weeks => $number - 1 );
                     if ( $day > $date->day_of_week % 7 ) {
-                        $date->add( days => $day - $date->day_of_week % 7  );
+                        $date->add( days => $day - $date->day_of_week % 7 );
                     }
-                    elsif ( $day < $date->day_of_week % 7  ) {
-                        $date->add( days => 7 + $day - $date->day_of_week % 7  );
+                    elsif ( $day < $date->day_of_week % 7 ) {
+                        $date->add( days => 7 + $day - $date->day_of_week % 7 );
                     }
                     push @dates, $date->clone;
                 }
@@ -622,10 +629,10 @@ sub MaybeRepeatMore {
 }
 
 sub CheckLastTicket {
-    my $date = shift;
+    my $date        = shift;
     my $last_ticket = shift;
-    my $type = shift;
-    my $span = shift || 1;
+    my $type        = shift;
+    my $span        = shift || 1;
 
     if ( $last_ticket->DueObj->Unix ) {
         my $due = $last_ticket->DueObj;
