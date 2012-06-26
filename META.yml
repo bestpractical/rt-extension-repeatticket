@@ -19,6 +19,8 @@ no_index:
     - etc
     - html
     - inc
+requires:
+  DateTime::Event::ICal: 0
 resources:
   license: http://opensource.org/licenses/gpl-license.php
 version: 0.01

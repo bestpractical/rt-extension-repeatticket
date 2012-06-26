@@ -9,6 +9,7 @@ use RT::Interface::Web;
 use DateTime;
 use RT::Date;
 use List::MoreUtils qw/after/;
+use DateTime::Event::ICal;
 
 my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
 {
@@ -122,35 +123,40 @@ sub Repeat {
         my $last_ticket = RT::Ticket->new( RT->SystemUser );
         $last_ticket->Load( $content->{'last-ticket'} );
 
-        my $due_date = $checkday->clone;
+        my $last_due;
+        if ( $last_ticket->DueObj->Unix ) {
+            $last_due = DateTime->from_epoch(
+                epoch     => $last_ticket->DueObj->Unix,
+                time_zone => RT->Config->Get('Timezone'),
+            );
+            $last_due->truncate( to => 'day' );
+        }
 
+        my $last_created = DateTime->from_epoch(
+            epoch     => $last_ticket->CreatedObj->Unix,
+            time_zone => RT->Config->Get('Timezone'),
+        );
+        $last_created->truncate( to => 'day' );
+        next unless $last_created->ymd lt $checkday->ymd;
+
+        my $set;
         if ( $content->{'repeat-type'} eq 'daily' ) {
             if ( $content->{'repeat-details-daily'} eq 'day' ) {
                 my $span = $content->{'repeat-details-daily-day'} || 1;
-                my $date = $checkday->clone;
-
-                unless ( CheckLastTicket( $date, $last_ticket, 'day', $span ) )
-                {
-                    $RT::Logger->debug('Failed last-ticket date check');
-                    next;
-                }
-
-                $due_date->add( days => $span );
+                $set = DateTime::Event::ICal->recur(
+                    dtstart => $last_due || $last_created,
+                    freq => 'daily',
+                    interval => $span,
+                );
+                next unless $set->contains($checkday);
             }
             elsif ( $content->{'repeat-details-daily'} eq 'weekday' ) {
-                unless ( $checkday->day_of_week >= 1
-                    && $checkday->day_of_week <= 5 )
-                {
-                    $RT::Logger->debug('Failed weekday check');
-                    next;
-                }
-
-                if ( $checkday->day_of_week == 5 ) {
-                    $due_date->add( days => 3 );
-                }
-                else {
-                    $due_date->add( days => 1 );
-                }
+                $set = DateTime::Event::ICal->recur(
+                    dtstart => $last_due || $last_created,
+                    freq => 'daily',
+                    byday => [ 'mo', 'tu', 'we', 'th', 'fr' ],
+                );
+                next unless $set->contains($checkday);
             }
             elsif ( $content->{'repeat-details-daily'} eq 'complete' ) {
                 unless ( CheckCompleteStatus($last_ticket) ) {
@@ -176,36 +182,23 @@ sub Repeat {
                 my $span = $content->{'repeat-details-weekly-week'} || 1;
                 my $date = $checkday->clone;
 
-                unless ( CheckLastTicket( $date, $last_ticket, 'week', $span ) )
-                {
-                    $RT::Logger->debug('Failed last-ticket date check');
-                    next;
-                }
-
                 my $weeks = $content->{'repeat-details-weekly-weeks'};
-
                 unless ( defined $weeks ) {
                     $RT::Logger->debug('Failed weeks defined check');
                     next;
                 }
 
                 $weeks = [$weeks] unless ref $weeks;
-                unless ( grep { $_ == $checkday->day_of_week % 7 } @$weeks ) {
-                    $RT::Logger->debug('Failed weeks check');
-                    next;
-                }
 
-                @$weeks = sort @$weeks;
-                $due_date->subtract( days => $due_date->day_of_week % 7 );
+                $set = DateTime::Event::ICal->recur(
+                    dtstart => $last_due || $last_created,
+                    freq => 'weekly',
+                    interval => $span,
+                    byday    => $weeks,
+                );
 
-                my ($after) = after { $_ == $date->day_of_week % 7 } @$weeks;
-                if ($after) {
-                    $due_date->add( days => $after );
-                }
-                else {
-                    $due_date->add( weeks => $span );
-                    $due_date->add( days  => $weeks->[0] );
-                }
+                next unless $set->contains($checkday);
+
             }
             elsif ( $content->{'repeat-details-weekly'} eq 'complete' ) {
                 unless ( CheckCompleteStatus($last_ticket) ) {
@@ -227,57 +220,33 @@ sub Repeat {
         }
         elsif ( $content->{'repeat-type'} eq 'monthly' ) {
             if ( $content->{'repeat-details-monthly'} eq 'day' ) {
-                my $day = $content->{'repeat-details-monthly-day-day'} || 1;
-                unless ( $day == $checkday->day_of_month ) {
-                    $RT::Logger->debug('Failed day of month check');
-                    next;
-                }
-
+                my $day  = $content->{'repeat-details-monthly-day-day'}   || 1;
                 my $span = $content->{'repeat-details-monthly-day-month'} || 1;
-                my $date = $checkday->clone;
-                unless (
-                    CheckLastTicket( $date, $last_ticket, 'month', $span ) )
-                {
-                    $RT::Logger->debug('Failed last-ticket date check');
-                    next;
-                }
 
-                $due_date->add( months => $span );
+                $set = DateTime::Event::ICal->recur(
+                    dtstart => $last_due || $last_created,
+                    freq => 'monthly',
+                    interval   => $span,
+                    bymonthday => $day,
+                );
+
+                next unless $set->contains($checkday);
             }
             elsif ( $content->{'repeat-details-monthly'} eq 'week' ) {
-                my $day = $content->{'repeat-details-monthly-week-week'} || 0;
-                unless ( $day == $checkday->day_of_week % 7 ) {
-                    $RT::Logger->debug('Failed day of week check');
-                    next;
-                }
-
+                my $day = $content->{'repeat-details-monthly-week-week'}
+                  || 'mo';
+                my $span = $content->{'repeat-details-monthly-week-month'} || 1;
                 my $number = $content->{'repeat-details-monthly-week-number'}
                   || 1;
 
-                unless ( CheckWeekNumber( $checkday, $number ) ) {
-                    $RT::Logger->debug('Failed week number check');
-                    next;
-                }
+                $set = DateTime::Event::ICal->recur(
+                    dtstart => $last_due || $last_created,
+                    freq => 'monthly',
+                    interval => $span,
+                    byday    => $number . $day,
+                );
 
-                my $span = $content->{'repeat-details-monthly-week-month'} || 1;
-                my $date = $checkday->clone;
-                unless (
-                    CheckLastTicket( $date, $last_ticket, 'month', $span ) )
-                {
-                    $RT::Logger->debug('Failed last-ticket date check');
-                    next;
-                }
-
-                $due_date->add( months => $span );
-                $due_date->truncate( to => 'month' );
-                $due_date->add( weeks => $number - 1 );
-                if ( $day > $due_date->day_of_week % 7 ) {
-                    $due_date->add( days => $day - $due_date->day_of_week % 7 );
-                }
-                elsif ( $day < $due_date->day_of_week % 7 ) {
-                    $due_date->add(
-                        days => 7 + $day - $due_date->day_of_week % 7 );
-                }
+                next unless $set->contains($checkday);
             }
             elsif ( $content->{'repeat-details-monthly'} eq 'complete' ) {
                 unless ( CheckCompleteStatus($last_ticket) ) {
@@ -299,49 +268,30 @@ sub Repeat {
         }
         elsif ( $content->{'repeat-type'} eq 'yearly' ) {
             if ( $content->{'repeat-details-yearly'} eq 'day' ) {
-                my $day = $content->{'repeat-details-yearly-day-day'} || 1;
-                unless ( $day == $checkday->day_of_month ) {
-                    $RT::Logger->debug('Failed day of month check');
-                    next;
-                }
-
+                my $day   = $content->{'repeat-details-yearly-day-day'}   || 1;
                 my $month = $content->{'repeat-details-yearly-day-month'} || 1;
-                unless ( $month == $checkday->month ) {
-                    $RT::Logger->debug('Failed month check');
-                    next;
-                }
-                $due_date->add( years => 1 );
+                $set = DateTime::Event::ICal->recur(
+                    dtstart => $last_due || $last_created,
+                    freq    => 'yearly',
+                    bymonth => $month,
+                    bymonthday => $day,
+                );
+
+                next unless $set->contains($checkday);
             }
             elsif ( $content->{'repeat-details-yearly'} eq 'week' ) {
-                my $day = $content->{'repeat-details-yearly-week-week'} || 0;
-                unless ( $day == $checkday->day_of_week % 7 ) {
-                    $RT::Logger->debug('Failed day of week check');
-                    next;
-                }
-
                 my $month = $content->{'repeat-details-yearly-week-month'} || 1;
-                unless ( $month == $checkday->month ) {
-                    $RT::Logger->debug('Failed month check');
-                    next;
-                }
-
+                my $day = $content->{'repeat-details-yearly-week-week'} || 'mo';
                 my $number = $content->{'repeat-details-yearly-week-number'}
                   || 1;
-                unless ( CheckWeekNumber( $checkday, $number ) ) {
-                    $RT::Logger->debug('Failed week number check');
-                    next;
-                }
+                $set = DateTime::Event::ICal->recur(
+                    dtstart => $last_due || $last_created,
+                    freq    => 'yearly',
+                    bymonth => $month,
+                    byday   => $number . $day,
+                );
 
-                $due_date->add( years => 1 );
-                $due_date->truncate( to => 'month' );
-                $due_date->add( weeks => $number - 1 );
-                if ( $day > $due_date->day_of_week % 7 ) {
-                    $due_date->add( days => $day - $due_date->day_of_week % 7 );
-                }
-                elsif ( $day < $due_date->day_of_week % 7 ) {
-                    $due_date->add(
-                        days => 7 + $day - $due_date->day_of_week % 7 );
-                }
+                next unless $set->contains($checkday);
             }
             elsif ( $content->{'repeat-details-yearly'} eq 'complete' ) {
                 unless ( CheckCompleteStatus($last_ticket) ) {
@@ -366,15 +316,18 @@ sub Repeat {
         my $starts = RT::Date->new( RT->SystemUser );
         $starts->Set( Format => 'unknown', Value => $checkday->ymd );
 
-        my $due = RT::Date->new( RT->SystemUser );
-        $due->Set( Format => 'unknown', Value => $due_date->ymd );
+        my $due;
+        if ($set) {
+            $due = RT::Date->new( RT->SystemUser );
+            $due->Set( Format => 'unknown', Value => $set->next($checkday) );
+        }
 
         my ( $id, $txn, $msg ) = _RepeatTicket(
             $repeat_ticket,
             Starts => $starts->ISO,
-            $due_date eq $checkday
-            ? ()
-            : ( Due => $due->ISO ),
+            $due
+            ? ( Due => $due->ISO )
+            : (),
         );
 
         if ($id) {
@@ -401,8 +354,8 @@ sub _RepeatTicket {
     my $repeat_ticket = shift;
     return unless $repeat_ticket;
 
-    my %args   = @_;
-    my $cf = RT::CustomField->new(RT->SystemUser);
+    my %args = @_;
+    my $cf   = RT::CustomField->new( RT->SystemUser );
     $cf->Load('Original Ticket');
 
     my $repeat = {
@@ -497,13 +450,20 @@ sub MaybeRepeatMore {
     my $last_ticket = RT::Ticket->new( RT->SystemUser );
     $last_ticket->Load( $content->{'last-ticket'} );
 
-    my $date =
-      $last_ticket->DueObj->Unix
-      ? DateTime->from_epoch(
-        epoch     => $last_ticket->DueObj->Unix - 3600 * 24,
-        time_zone => RT->Config->Get('Timezone')
-      )
-      : DateTime->today( time_zone => RT->Config->Get('Timezone') );
+    my $last_due;
+    if ( $last_ticket->DueObj->Unix ) {
+        $last_due = DateTime->from_epoch(
+            epoch     => $last_ticket->DueObj->Unix,
+            time_zone => RT->Config->Get('Timezone'),
+        );
+        $last_due->truncate( to => 'day' );
+    }
+
+    my $last_created = DateTime->from_epoch(
+        epoch     => $last_ticket->CreatedObj->Unix,
+        time_zone => RT->Config->Get('Timezone'),
+    );
+    $last_created->truncate( to => 'day' );
 
     @$tickets = grep {
         my $t = RT::Ticket->new( RT->SystemUser );
@@ -517,219 +477,108 @@ sub MaybeRepeatMore {
     my @ids;
     if ( $co_number > @$tickets ) {
         my $total = $co_number - @$tickets;
-        my @dates;
+        my $set;
         if ( $content->{'repeat-type'} eq 'daily' ) {
             if ( $content->{'repeat-details-daily'} eq 'day' ) {
-                my $span = $content->{'repeat-details-daily-day'} || 1;
-                for ( 1 .. $total ) {
-                    $date->add( days => $span );
-                    push @dates, $date->clone;
-                }
+                $set = DateTime::Event::ICal->recur(
+                    dtstart  => $last_due || $last_created,
+                    freq     => 'daily',
+                    interval => $content->{'repeat-details-daily-day'} || 1,
+                );
             }
             elsif ( $content->{'repeat-details-daily'} eq 'weekday' ) {
-                while ( @dates < $total ) {
-                    $date->add( days => 1 );
-                    push @dates, $date->clone
-                      if $date->day_of_week >= 1 && $date->day_of_week <= 5;
-                }
+                $set = DateTime::Event::ICal->recur(
+                    dtstart  => $last_due || $last_created,
+                    freq    => 'daily',
+                    byday   => [ 'mo', 'tu', 'we', 'th', 'fr' ],
+                );
             }
         }
         elsif ( $content->{'repeat-type'} eq 'weekly' ) {
             if ( $content->{'repeat-details-weekly'} eq 'week' ) {
-                my $span = $content->{'repeat-details-weekly-week'} || 1;
                 my $weeks = $content->{'repeat-details-weekly-weeks'};
                 if ( defined $weeks ) {
-                    $weeks = [$weeks] unless ref $weeks;
-
-                    if ( grep { $_ >= 0 && $_ <= 6 } @$weeks ) {
-                        $date->add( weeks => $span );
-                        $date->subtract( days => $date->day_of_week % 7 );
-
-                        while ( @dates < $total ) {
-                            for my $day ( sort @$weeks ) {
-                                push @dates, $date->clone->add( days => $day );
-                                last if @dates == $total;
-                            }
-
-                            $date->add( weeks => $span );
-                        }
-                    }
+                    $set = DateTime::Event::ICal->recur(
+                        dtstart  => $last_due || $last_created,
+                        freq     => 'weekly',
+                        interval => $content->{'repeat-details-weekly-week'}
+                          || 1,
+                        byday => ref $weeks ? $weeks : [$weeks],
+                    );
+                }
+                else {
+                    $RT::Logger->error('No weeks defined');
                 }
             }
         }
         elsif ( $content->{'repeat-type'} eq 'monthly' ) {
             if ( $content->{'repeat-details-monthly'} eq 'day' ) {
-                my $span = $content->{'repeat-details-monthly-day-month'} || 1;
-                $date->set( day => $content->{'repeat-details-monthly-day-day'}
-                      || 1 );
-
-                for ( 1 .. $total ) {
-                    $date->add( months => $span );
-                    push @dates, $date->clone;
-                }
+                $set = DateTime::Event::ICal->recur(
+                    dtstart  => $last_due || $last_created,
+                    freq     => 'monthly',
+                    interval => $content->{'repeat-details-monthly-day-month'}
+                      || 1,
+                    bymonthday => $content->{'repeat-details-monthly-day-day'}
+                      || 1,
+                );
             }
             elsif ( $content->{'repeat-details-monthly'} eq 'week' ) {
-                my $span = $content->{'repeat-details-monthly-week-month'} || 1;
                 my $number = $content->{'repeat-details-monthly-week-number'}
                   || 1;
-                my $day = $content->{'repeat-details-monthly-week-week'} || 0;
+                my $day = $content->{'repeat-details-monthly-week-week'}
+                  || 'mo';
 
-                for ( 1 .. $total ) {
-                    $date->add( months => $span );
-                    $date->truncate( to => 'month' );
-                    $date->add( weeks => $number - 1 );
-
-                    if ( $day > $date->day_of_week % 7 ) {
-                        $date->add( days => $day - $date->day_of_week % 7 );
-                    }
-                    elsif ( $day < $date->day_of_week % 7 ) {
-                        $date->add( days => 7 + $day - $date->day_of_week % 7 );
-                    }
-                    push @dates, $date->clone;
-                }
+                $set = DateTime::Event::ICal->recur(
+                    dtstart  => $last_due || $last_created,
+                    freq     => 'monthly',
+                    interval => $content->{'repeat-details-monthly-week-month'}
+                      || 1,
+                    byday => $number . $day,
+                );
             }
         }
         elsif ( $content->{'repeat-type'} eq 'yearly' ) {
             if ( $content->{'repeat-details-yearly'} eq 'day' ) {
-                $date->set( day => $content->{'repeat-details-yearly-day-day'}
-                      || 1 );
-                $date->set(
-                    month => $content->{'repeat-details-yearly-day-month'}
-                      || 1 );
-                for ( 1 .. $total ) {
-                    $date->add( years => 1 );
-                    push @dates, $date->clone;
-                }
+                $set = DateTime::Event::ICal->recur(
+                    dtstart  => $last_due || $last_created,
+                    freq    => 'yearly',
+                    bymonth => $content->{'repeat-details-yearly-day-month'}
+                      || 1,
+                    bymonthday => $content->{'repeat-details-yearly-day-day'}
+                      || 1,
+                );
             }
             elsif ( $content->{'repeat-details-yearly'} eq 'week' ) {
-                $date->set(
-                    month => $content->{'repeat-details-yearly-week-month'}
-                      || 1 );
-
                 my $number = $content->{'repeat-details-yearly-week-number'}
                   || 1;
-                my $day = $content->{'repeat-details-yearly-week-week'} || 0;
+                my $day = $content->{'repeat-details-yearly-week-week'} || 'mo';
 
-                for ( 1 .. $total ) {
-                    $date->add( years => 1 );
-                    $date->truncate( to => 'month' );
-                    $date->add( weeks => $number - 1 );
-                    if ( $day > $date->day_of_week % 7 ) {
-                        $date->add( days => $day - $date->day_of_week % 7 );
-                    }
-                    elsif ( $day < $date->day_of_week % 7 ) {
-                        $date->add( days => 7 + $day - $date->day_of_week % 7 );
-                    }
-                    push @dates, $date->clone;
-                }
+                $set = DateTime::Event::ICal->recur(
+                    dtstart  => $last_due || $last_created,
+                    freq    => 'yearly',
+                    bymonth => $content->{'repeat-details-yearly-week-month'}
+                      || 1,
+                    byday => $number . $day,
+                );
             }
         }
 
-        for my $date (@dates) {
-            push @ids, Repeat( $attr, @dates );
+        if ($set) {
+            my @dates;
+            my $iter = $set->iterator;
+            while ( my $dt = $iter->next ) {
+                next if $dt == $last_created;
+
+                push @dates, $dt;
+                last if @dates >= $total;
+            }
+
+            for my $date (@dates) {
+                push @ids, Repeat( $attr, @dates );
+            }
         }
     }
     return @ids;
-}
-
-sub CheckLastTicket {
-    my $date        = shift;
-    my $last_ticket = shift;
-    my $type        = shift;
-    my $span        = shift || 1;
-
-    if ( $last_ticket->DueObj->Unix ) {
-        my $due = $last_ticket->DueObj;
-        if ( $date->ymd ge $due->Date( Timezone => 'user' ) ) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
-    }
-
-    my $created = DateTime->from_epoch(
-        epoch     => $last_ticket->CreatedObj->Unix,
-        time_zone => RT->Config->Get('Timezone'),
-    );
-    $created->truncate( to => 'day' );
-
-    my $check = $date->clone();
-
-    if ( $type eq 'day' ) {
-        $check->subtract( days => $span );
-        if ( $check->ymd ge $created->ymd ) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
-    }
-    elsif ( $type eq 'week' ) {
-        my $created_week_start =
-          $created->clone->subtract( days => $created->day_of_week % 7 );
-        my $check_week_start =
-          $check->clone->subtract( days => $check->day_of_week % 7 );
-
-        return 0 unless $check_week_start > $created_week_start;
-
-        return 1 if $span == 1;
-
-        if ( ( $check_week_start->epoch - $created_week_start->epoch )
-            % ( $span * 24 * 3600 * 7 ) )
-        {
-            return 0;
-        }
-        else {
-            return 1;
-        }
-    }
-    elsif ( $type eq 'month' ) {
-        my $created_month_start = $created->clone->truncate( to => 'month' );
-        my $check_month_start = $check->clone->truncate( to => 'month' );
-
-        return 0 unless $check_month_start > $created_month_start;
-        return 1 if $span == 1;
-
-        if (
-            (
-                $check->year * 12 +
-                $check->month -
-                $created->year * 12 -
-                $created->month
-            ) % $span
-          )
-        {
-            return 0;
-        }
-        else {
-            return 1;
-        }
-    }
-
-}
-
-sub CheckWeekNumber {
-    my $date = shift;
-    my $number = shift || 1;
-    if ( $number == 5 ) {    # last one, not just 5th
-        my $next_month =
-          $date->clone->truncate( to => 'month' )->add( months => 1 );
-        if ( $next_month->epoch - $date->epoch <= 24 * 3600 * 7 ) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
-    }
-    else {
-        if ( $number == int( ( $date->day_of_month - 1 ) / 7 ) + 1 ) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
-    }
 }
 
 sub CheckCompleteStatus {
@@ -753,6 +602,7 @@ sub CheckCompleteDate {
 
     return 0
       if $resolved->Date( Timezone => 'user' ) gt $date->ymd;
+
 
     return 1;
 }

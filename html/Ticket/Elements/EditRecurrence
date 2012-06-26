@@ -91,12 +91,11 @@ size="4" value="<% $ARGSRef->{'repeat-details-weekly-week'} || 1 %>" /> <&|/l&>w
         <td width="10px" />
 % for my $number ( 0 .. 6 ) {
         <td>
-            <input name="repeat-details-weekly-weeks" type="checkbox" value="<%
-$number %>" 
+    <input name="repeat-details-weekly-weeks" type="checkbox" value="<% $week_values[$number] %>"
 % if ( defined $ARGSRef->{'repeat-details-weekly-weeks'} && (
-%   ( ref $ARGSRef->{'repeat-details-weekly-weeks'} && grep { $_ == $number }
+%   ( ref $ARGSRef->{'repeat-details-weekly-weeks'} && grep { $_ eq $week_values[$number] }
 %         @{$ARGSRef->{'repeat-details-weekly-weeks'}} ) ||
-%           ( $ARGSRef->{'repeat-details-weekly-weeks'} == $number ) ) ) {
+%           ( $ARGSRef->{'repeat-details-weekly-weeks'} eq $week_values[$number] ) ) ) {
     checked="checked"
 % }
 
@@ -123,7 +122,7 @@ $number %>"
     <tr>
         <td>
             <input name="repeat-details-monthly" type="radio" value="day" <% ($ARGSRef->{'repeat-details-monthly'} || '') eq 'day' ?  'checked="checked"' : '' |n %> /><&|/l&>Day</&>
- <input name="repeat-details-monthly-day-day" type="text" size="4" value="<% $ARGSRef->{'repeat-details-monthly-day'} || 1 %>" /> <&|/l&>of every</&>
+ <input name="repeat-details-monthly-day-day" type="text" size="4" value="<% $ARGSRef->{'repeat-details-monthly-day-day'} || 1 %>" /> <&|/l&>of every</&>
  <input name="repeat-details-monthly-day-month" type="text" size="4" value="<% $ARGSRef->{'repeat-details-monthly-day-month'} || 1 %>" /> <&|/l&>month(s)</&>
         </td>
     </tr>
@@ -132,13 +131,14 @@ $number %>"
             <input name="repeat-details-monthly" type="radio" value="week" <% ($ARGSRef->{'repeat-details-monthly'} || '') eq 'week' ?  'checked="checked"' : '' |n %> /><&|/l&>The</&>
 <select name="repeat-details-monthly-week-number">
 % for my $number ( 1 .. 5 ) {
-    <option value="<% $number %>" <%($ARGSRef->{'repeat-details-monthly-week-number'} || '') eq $number ?  'selected="selected"' : '' |n %>><% loc($week_number_labels[$number-1]) %></option>
+    <option value="<% $number == 5 ? -1 : $number %>" <%($ARGSRef->{'repeat-details-monthly-week-number'} || '') eq $number ?  'selected="selected"' : '' |n %>><% loc($week_number_labels[$number-1]) %></option>
 % }
 </select>
 
 <select name="repeat-details-monthly-week-week">
 % for my $number ( 0 .. 6 ) {
-    <option value="<% $number %>" <%($ARGSRef->{'repeat-details-monthly-week-week'} || '') eq $number ?  'selected="selected"' : '' |n %>><% loc($week_labels[$number]) %></option>
+    <option value="<% $week_values[$number] %>"
+    <%($ARGSRef->{'repeat-details-monthly-week-week'} || '') eq $week_values[$number] ?  'selected="selected"' : '' |n %>><% loc($week_labels[$number]) %></option>
 % }
 </select>
 <&|/l&>of every</&><input name="repeat-details-monthly-week-month" type="text" size="4" value="<% $ARGSRef->{'repeat-details-monthly-week-month'} || 1 %>" /> <&|/l&>month(s)</&>
@@ -172,13 +172,14 @@ name="repeat-details-monthly-complete" type="text" size="4" value="<% $ARGSRef->
             <input name="repeat-details-yearly" type="radio" value="week" <% ($ARGSRef->{'repeat-details-yearly'} || '') eq 'week' ?  'checked="checked"' : '' |n %> /><&|/l&>The</&>
 <select name="repeat-details-yearly-week-number">
 % for my $number ( 1 .. 5 ) {
-    <option value="<% $number %>" <%($ARGSRef->{'repeat-details-yearly-week-number'} || '') eq $number ?  'selected="selected"' : '' |n %>><% loc($week_number_labels[$number-1]) %></option>
+    <option value="<% $number == 5 ? -1 : $number %>" <%($ARGSRef->{'repeat-details-yearly-week-number'} || '') eq $number ?  'selected="selected"' : '' |n %>><% loc($week_number_labels[$number-1]) %></option>
 % }
 </select>
 
 <select name="repeat-details-yearly-week-week">
 % for my $number ( 0 .. 6 ) {
-    <option value="<% $number %>" <%($ARGSRef->{'repeat-details-yearly-week-week'} || '') eq $number ?  'selected="selected"' : '' |n %>><% loc($week_labels[$number]) %></option>
+    <option value="<% $week_values[$number] %>"
+    <%($ARGSRef->{'repeat-details-yearly-week-week'} || '') eq $week_values[$number] ?  'selected="selected"' : '' |n %>><% loc($week_labels[$number]) %></option>
 % }
 </select>
 <&|/l&>of</&>
@@ -242,6 +243,7 @@ name="repeat-details-monthly-complete" type="text" size="4" value="<% $ARGSRef->
 
 <%init>
 my @week_labels = qw/Sunday Monday Tuesday Wedsenday Thursday Friday Saturday/; # loc
+my @week_values = qw/su mo tu we th fr sa/;
 my @week_number_labels = qw/First Second Third Fourth Last/; # loc
 my @month_labels = qw/January February March April  May June July August September October November December/; # loc
 
