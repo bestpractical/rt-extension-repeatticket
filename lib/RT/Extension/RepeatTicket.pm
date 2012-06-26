@@ -402,12 +402,16 @@ sub _RepeatTicket {
     return unless $repeat_ticket;
 
     my %args   = @_;
+    my $cf = RT::CustomField->new(RT->SystemUser);
+    $cf->Load('Original Ticket');
+
     my $repeat = {
         Queue           => $repeat_ticket->Queue,
         Requestor       => join( ',', $repeat_ticket->RequestorAddresses ),
         Cc              => join( ',', $repeat_ticket->CcAddresses ),
         AdminCc         => join( ',', $repeat_ticket->AdminCcAddresses ),
         InitialPriority => $repeat_ticket->Priority,
+        'CustomField-' . $cf->id => $repeat_ticket->id,
     };
 
     $repeat->{$_} = $repeat_ticket->$_()

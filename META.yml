@@ -16,6 +16,7 @@ meta-spec:
 name: RT-Extension-RepeatTicket
 no_index:
   directory:
+    - etc
     - html
     - inc
 resources:
