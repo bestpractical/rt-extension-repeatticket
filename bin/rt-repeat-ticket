@@ -65,7 +65,8 @@ rt-repeat-ticket - repeat ticket
 
 =head1 SYNOPSIS
 
-    rt-repeat-ticket 
+    rt-repeat-ticket  # today
+    rt-repeat-ticket --date 2012-06-23
 
 =head1 DESCRIPTION
 
