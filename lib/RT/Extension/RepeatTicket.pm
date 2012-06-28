@@ -625,6 +625,7 @@ To install this module, run the following commands:
     perl Makefile.PL
     make
     make install
+    make initdb
 
 add RT::Extension::RepeatTicket to @Plugins in RT's etc/RT_SiteConfig.pm:
 
