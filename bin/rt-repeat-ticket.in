@@ -4,60 +4,78 @@
 use strict;
 use warnings;
 
+package RT::Repeat::Ticket::Run;
+
+BEGIN {
 ### after:     use lib qw(@RT_LIB_PATH@);
 use lib '/opt/rt4/local/lib /opt/rt4/lib';
-
-use Getopt::Long;
-my %opt;
-GetOptions( \%opt, 'help|h', 'date=s' );
-
-if ( $opt{help} ) {
-    require Pod::Usage;
-    Pod::Usage::pod2usage( { verbose => 2 } );
-    exit;
+use RT;
+RT::LoadConfig;
+RT::Init;
 }
-
-require RT;
-RT::LoadConfig();
-RT::Init();
 
 use RT::Attributes;
 use RT::Date;
-
-my $attrs = RT::Attributes->new( RT->SystemUser );
-$attrs->Limit( FIELD => 'Name', VALUE => 'RepeatTicketSettings' );
-
 use RT::Extension::RepeatTicket;
-my $date;
-if ( $opt{date} ) {
-    my $d = RT::Date->new( RT->SystemUser );
-    $d->Set(
-        Format => 'unknown',
-        Value  => $opt{date},
-    );
 
-    # can't use ->Unix because timezone issue
-    # where $d->Unix could return a small seconds after 1970-01-01 00:00:00 UTC
-    # if date parse fails
-    if ( $d->Date ne '1970-01-01' ) {
-        $date = DateTime->from_epoch(
-            epoch     => $d->Unix,
-            time_zone => RT->Config->Get('Timezone'),
-        );
+__PACKAGE__->run(@ARGV) unless caller;
+
+sub run{
+    my ($class, @args) = @_;
+
+    my %args = $class->process_args(@args);
+
+    my $attrs = RT::Attributes->new( RT->SystemUser );
+    $attrs->Limit( FIELD => 'Name', VALUE => 'RepeatTicketSettings' );
+
+    while ( my $attr = $attrs->Next ) {
+        next unless $attr->Content->{'repeat-enabled'};
+        $RT::Logger->info( 'Repeating ticket ' . $attr->Object->id );
+        my @ids = RT::Extension::RepeatTicket::Run( $attr, $args{date} );
+        if ( @ids ) {
+            $RT::Logger->info(
+                'Repeated ticket ' . $attr->Object->id . ': ' . join ', ', @ids );
+        }
     }
+    return;
 }
 
-$date ||= DateTime->today( time_zone => RT->Config->Get('Timezone') );
+sub process_args{
+    require Getopt::Long;
+    local @ARGV = @_;
 
-while ( my $attr = $attrs->Next ) {
-    next unless $attr->Content->{'repeat-enabled'};
-    $RT::Logger->info( 'Repeating ticket ' . $attr->Object->id );
-    my @ids = RT::Extension::RepeatTicket::Run( $attr, $date );
-    if ( @ids ) {
-        $RT::Logger->info(
-            'Repeated ticket ' . $attr->Object->id . ': ' . join ', ', @ids );
+    my %opt;
+    Getopt::Long::GetOptions( \%opt, 'help|h', 'date=s' );
+
+    if ( $opt{help} ) {
+        require Pod::Usage;
+        Pod::Usage::pod2usage( { verbose => 2 } );
+        exit;
     }
+
+    my %args;
+    if ( $opt{date} ) {
+        my $d = RT::Date->new( RT->SystemUser );
+        $d->Set(
+                Format => 'unknown',
+                Value  => $opt{date},
+               );
+
+        # can't use ->Unix because timezone issue
+        # where $d->Unix could return a small seconds after 1970-01-01 00:00:00 UTC
+        # if date parse fails
+        if ( $d->Date ne '1970-01-01' ) {
+            $args{date} = DateTime->from_epoch(
+                epoch     => $d->Unix,
+                time_zone => RT->Config->Get('Timezone'),
+            );
+        }
+    }
+    $args{date} ||= DateTime->today( time_zone => RT->Config->Get('Timezone') );
+    return %args;
 }
+
+1;
 
 __END__
 
