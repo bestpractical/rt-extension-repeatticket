@@ -1,9 +1,11 @@
 #!/usr/bin/env perl
+### before: #!@PERL@
 
 use strict;
 use warnings;
 
-use lib '/opt/rt4/lib';
+### after:     use lib qw(@RT_LIB_PATH@);
+use lib '/opt/rt4/local/lib /opt/rt4/lib';
 
 use Getopt::Long;
 my %opt;
