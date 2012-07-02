@@ -19,6 +19,7 @@ no_index:
     - etc
     - html
     - inc
+    - t
 requires:
   DateTime::Event::ICal: 0
 resources:
