@@ -3,7 +3,7 @@
 
 <& /Elements/ListActions, actions => \@results &>
 
-<form method="post" action="ModifyRecurrence.html">
+<form method="post" name="ModifyRecurrence" action="ModifyRecurrence.html">
 <input type="hidden" class="hidden" name="id" value="<%$TicketObj->Id%>" />
 <&| /Widgets/TitleBox,title => loc('Modify recurrence for ticket # [_1]', $TicketObj->Id), class=> 'ticket-info-repeat' &>
 <& Elements/EditRecurrence, Ticket => $TicketObj &>
