@@ -444,7 +444,9 @@ sub MaybeRepeatMore {
     my $attr    = shift;
     my $content = $attr->Content;
 
-    my $co_number = RT->Config->Get('RepeatTicketCoexistentNumber') || 1;
+    my $co_number = RT->Config->Get('RepeatTicketCoexistentNumber');
+    return unless $co_number;
+
     my $tickets = $content->{tickets} || [];
 
     my $last_ticket = RT::Ticket->new( RT->SystemUser );
