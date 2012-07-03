@@ -444,7 +444,10 @@ sub MaybeRepeatMore {
     my $attr    = shift;
     my $content = $attr->Content;
 
-    my $co_number = RT->Config->Get('RepeatTicketCoexistentNumber');
+    my $co_number = $content->{'repeat-coexistent-number'};
+    $co_number = RT->Config->Get('RepeatTicketCoexistentNumber')
+      unless defined $co_number && length $co_number;  # respect 0 but ''
+
     return unless $co_number;
 
     my $tickets = $content->{tickets} || [];

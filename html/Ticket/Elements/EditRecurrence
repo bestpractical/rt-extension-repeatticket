@@ -25,6 +25,10 @@ jQuery( function () {
 <input name="repeat-enabled" type="checkbox" value="1" <% $ARGSRef->{'repeat-enabled'} ? 'checked="checked"' : '' |n %>/> <&|/l&>Enable Recurrence?</&>
 
 <div class="repeat-toggle <% $ARGSRef->{'repeat-enabled'} ? '' : 'hidden' %> ">
+
+<&|/l&>Coexistent number</&>:
+<input size="3" name="repeat-coexistent-number" type="text" value="<% $ARGSRef->{'repeat-coexistent-number'} %>" />
+
 <fieldset>
 <legend><&|/l&>Recurrence pattern</&></legend>
 <table width="100%" border="0">
@@ -263,6 +267,9 @@ $ARGSRef->{'repeat-details-weekly'} ||= 'week';
 $ARGSRef->{'repeat-details-monthly'} ||= 'day';
 $ARGSRef->{'repeat-details-yearly'} ||= 'day';
 $ARGSRef->{'repeat-end'} ||= 'none';
+
+$ARGSRef->{'repeat-coexistent-number'} ||= RT->Config->Get('RepeatTicketCoexistentNumber') || 0;
+
 </%init>
 <%args>
 $ARGSRef => undef
