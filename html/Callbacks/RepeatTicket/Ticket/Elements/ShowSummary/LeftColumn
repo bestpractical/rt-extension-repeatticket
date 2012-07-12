@@ -1,7 +1,10 @@
-<&| /Widgets/TitleBox, title => loc("Recurrence"), class=>'ticket-info-repeat-recurrence' &>
+<&| /Widgets/TitleBox, title => loc("Recurrence"), class=>'ticket-info-repeat-recurrence',
+   ($can_modify ? (title_href => RT->Config->Get('WebPath')."/Ticket/ModifyRecurrence.html?id=".$Ticket->Id) : ()) &>
 <& /Ticket/Elements/EditRecurrence, Ticket => $Ticket, ReadOnly => 1 &>
 </&>
-
 <%args>
 $Ticket
 </%args>
+<%init>
+my $can_modify = $Ticket->CurrentUserHasRight('ModifyTicket');
+</%init>
