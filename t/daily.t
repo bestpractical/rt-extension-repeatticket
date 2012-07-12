@@ -1,14 +1,13 @@
 use strict;
 use warnings;
 
-use RT::Extension::RepeatTicket::Test tests => 35;
+use RT::Extension::RepeatTicket::Test tests => 37;
 
 use_ok('RT::Extension::RepeatTicket');
 require_ok('bin/rt-repeat-ticket');
 
+my ( $baseurl, $m ) = RT::Test->started_ok();
 {
-    my ( $baseurl, $m ) = RT::Test->started_ok();
-
     diag "Run with default coexist value of 1";
     my $daily_id = run_tests($baseurl, $m);
 
@@ -24,18 +23,23 @@ require_ok('bin/rt-repeat-ticket');
     $m->text_like( qr/Set up recurring aperture maintenance/);
 }
 
-RT::Test->stop_server;
-
 {
-    RT->Config->Set('RepeatTicketCoexistentNumber', 2);
-    my ( $baseurl, $m ) = RT::Test->started_ok();
-
     diag "Run with Coexistent value of 2";
     my $daily_id = run_tests($baseurl, $m);
+
+    # Set concurrent active tickets to 2.
+    ok( $m->goto_ticket($daily_id), "Found ticket $daily_id.");
+    $m->follow_link_ok( {text => 'Recurrence'}, 'Loaded recurrence edit' );
+
+    $m->form_name("ModifyRecurrence");
+    $m->field('repeat-coexistent-number' => 2);
+    $m->click_button(name => 'SubmitTicket');
+    $m->text_like( qr/Recurrence updated/);
+
     ok(!(RT::Repeat::Ticket::Run->run()), 'Ran recurrence script for today.');
 
     my $second = $daily_id + 1;
-    ok( $m->goto_ticket($second), 'Recurrence ticket created for today.');
+    ok( $m->goto_ticket($second), 'Recurrence ticket $second created for today.');
     $m->text_like( qr/Set up recurring aperture maintenance/);
 
     my $tomorrow = DateTime->now->add( days => 1 );
@@ -46,12 +50,11 @@ RT::Test->stop_server;
     ok( !($ticket->Load($third)), "Third ticket $third not created.");
 
     $ticket->Load($second);
-    ok($ticket->SetStatus('resolved'), "Ticket $third resolved");
+    ok($ticket->SetStatus('resolved'), "Ticket $second resolved");
     ok(!(RT::Repeat::Ticket::Run->run()), 'Ran recurrence script for today.');
 
     ok( $m->goto_ticket($third), "Recurrence ticket $third created.");
     $m->text_like( qr/Set up recurring aperture maintenance/);
-    RT::Test->stop_server;
 }
 
 
