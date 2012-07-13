@@ -350,6 +350,34 @@ sub Repeat {
     return @ids;
 }
 
+sub TicketsToMeetCoexistentNumber {
+    my $attr    = shift;
+    my $content = $attr->Content;
+
+    my $co_number = $content->{'repeat-coexistent-number'};
+    $co_number = RT->Config->Get('RepeatTicketCoexistentNumber')
+      unless defined $co_number && length $co_number;  # respect 0 but ''
+
+    return unless $co_number;
+
+    my $tickets = GetActiveTickets($content);
+
+    return $co_number - @$tickets;
+}
+
+sub GetActiveTickets {
+    my $content = shift;
+
+    my $tickets_ref = $content->{tickets} || [];
+    @$tickets_ref = grep {
+        my $t = RT::Ticket->new( RT->SystemUser );
+        $t->Load($_);
+        !$t->QueueObj->Lifecycle->IsInactive( $t->Status );
+    } @$tickets_ref;
+
+    return $tickets_ref;
+}
+
 sub _RepeatTicket {
     my $repeat_ticket = shift;
     return unless $repeat_ticket;
@@ -444,13 +472,7 @@ sub MaybeRepeatMore {
     my $attr    = shift;
     my $content = $attr->Content;
 
-    my $co_number = $content->{'repeat-coexistent-number'};
-    $co_number = RT->Config->Get('RepeatTicketCoexistentNumber')
-      unless defined $co_number && length $co_number;  # respect 0 but ''
-
-    return unless $co_number;
-
-    my $tickets = $content->{tickets} || [];
+    my $tickets_needed = TicketsToMeetCoexistentNumber($attr);
 
     my $last_ticket = RT::Ticket->new( RT->SystemUser );
     $last_ticket->Load( $content->{'last-ticket'} );
@@ -470,18 +492,11 @@ sub MaybeRepeatMore {
     );
     $last_created->truncate( to => 'day' );
 
-    @$tickets = grep {
-        my $t = RT::Ticket->new( RT->SystemUser );
-        $t->Load($_);
-        !$t->QueueObj->Lifecycle->IsInactive( $t->Status );
-    } @$tickets;
-
-    $content->{tickets} = $tickets;
+    $content->{tickets} = GetActiveTickets($content);
     $attr->SetContent($content);
 
     my @ids;
-    if ( $co_number > @$tickets ) {
-        my $total = $co_number - @$tickets;
+    if ( $tickets_needed ) {
         my $set;
         if ( $content->{'repeat-type'} eq 'daily' ) {
             if ( $content->{'repeat-details-daily'} eq 'day' ) {
@@ -575,7 +590,7 @@ sub MaybeRepeatMore {
                 next if $dt == $last_created;
 
                 push @dates, $dt;
-                last if @dates >= $total;
+                last if @dates >= $tickets_needed;
             }
 
             for my $date (@dates) {
