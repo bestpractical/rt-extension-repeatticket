@@ -26,6 +26,8 @@ jQuery( function () {
 
 <div class="repeat-toggle <% $ARGSRef->{'repeat-enabled'} ? '' : 'hidden' %> ">
 
+<&|/l&>Ticket lead time (days)</&>:
+<input size="3" name="repeat-lead-time" type="text" value="<% $ARGSRef->{'repeat-lead-time'} %>" />
 <&|/l&>Concurrent active tickets</&>:
 <input size="3" name="repeat-coexistent-number" type="text" value="<% $ARGSRef->{'repeat-coexistent-number'} %>" />
 
@@ -267,6 +269,7 @@ $ARGSRef->{'repeat-details-weekly'} ||= 'week';
 $ARGSRef->{'repeat-details-monthly'} ||= 'day';
 $ARGSRef->{'repeat-details-yearly'} ||= 'day';
 $ARGSRef->{'repeat-end'} ||= 'none';
+$ARGSRef->{'repeat-lead-time'} ||= RT->Config->Get('RepeatTicketLeadTime') || 14;
 $ARGSRef->{'repeat-coexistent-number'} ||= RT->Config->Get('RepeatTicketCoexistentNumber') || 1;
 
 </%init>

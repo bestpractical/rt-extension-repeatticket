@@ -25,7 +25,7 @@ my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
                 'last-ticket' => $ticket->id,
                 map { $_ => $args{$_} } grep { /^repeat/ } keys %args
             );
-            MaybeRepeatMore($attr);
+            Run($attr);
         }
         return ( $ticket, @actions );
     };
@@ -86,7 +86,12 @@ sub Repeat {
     return unless $tickets_needed;
 
     for my $checkday (@checkdays) {
-        $RT::Logger->debug( 'checking ' . $checkday->ymd );
+        # Adjust by lead time
+        my $original_date = $checkday->clone();
+        $checkday = $checkday->add( days => $content->{'repeat-lead-time'} )
+          if defined $content->{'repeat-lead-time'};
+        $RT::Logger->debug( 'Checking date ' . $original_date ->ymd .
+                            ' with adjusted lead time date ' . $checkday->ymd );
 
         if ( $content->{'repeat-start-date'} ) {
             my $date = RT::Date->new( RT->SystemUser );
@@ -95,7 +100,7 @@ sub Repeat {
                 Value  => $content->{'repeat-start-date'},
             );
             if ( $checkday->ymd lt $date->Date ) {
-                $RT::Logger->debug('Failed repeat-start-date check');
+                $RT::Logger->debug('Not yet at start date' . $date->Date);
                 next;
             }
         }
@@ -117,7 +122,7 @@ sub Repeat {
                 Value  => $content->{'repeat-end-date'},
             );
 
-            if ( $checkday->ymd gt $date->Date ) {
+            if ( $original_date->ymd gt $date->Date ) {
                 $RT::Logger->debug('Failed repeat-end-date check');
                 next;
             }
@@ -317,12 +322,12 @@ sub Repeat {
 
         # use RT::Date to work around the timezone issue
         my $starts = RT::Date->new( RT->SystemUser );
-        $starts->Set( Format => 'unknown', Value => $checkday->ymd );
+        $starts->Set( Format => 'unknown', Value => $original_date->ymd );
 
         my $due;
         if ($set) {
             $due = RT::Date->new( RT->SystemUser );
-            $due->Set( Format => 'unknown', Value => $set->next($checkday) );
+            $due->Set( Format => 'unknown', Value => $checkday );
         }
 
         my ( $id, $txn, $msg ) = _RepeatTicket(
@@ -362,7 +367,7 @@ sub TicketsToMeetCoexistentNumber {
       unless defined $co_number && length $co_number;  # respect 0 but ''
     return unless $co_number;
 
-    my $tickets = GetActiveTickets($content);
+    my $tickets = GetActiveTickets($content) || 0;
     return $co_number - @$tickets;
 }
 
@@ -472,7 +477,6 @@ sub _RepeatTicket {
 sub MaybeRepeatMore {
     my $attr    = shift;
     my $content = $attr->Content;
-
     my $tickets_needed = TicketsToMeetCoexistentNumber($attr);
 
     my $last_ticket = RT::Ticket->new( RT->SystemUser );

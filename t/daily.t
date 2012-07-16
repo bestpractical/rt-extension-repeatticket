@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use RT::Extension::RepeatTicket::Test tests => 41;
+use RT::Extension::RepeatTicket::Test tests => 43;
 
 use_ok('RT::Extension::RepeatTicket');
 require_ok('bin/rt-repeat-ticket');
@@ -26,8 +26,15 @@ my ( $baseurl, $m ) = RT::Test->started_ok();
     ok( $ticket->Load($daily_id), "Loaded ticket $daily_id");
     ok($ticket->SetStatus('resolved'), "Ticket $daily_id resolved");
     ok(!(RT::Repeat::Ticket::Run->run('-date=' . $tomorrow->ymd)), 'Ran recurrence script for tomorrow.');
-    ok( $m->goto_ticket($next_id), "Recurrence ticket $next_id created for today.");
+    ok( $m->goto_ticket($next_id), "Recurrence ticket $next_id created for tomorrow.");
     $m->text_like( qr/Set up recurring aperture maintenance/);
+
+    my $ticket2 = RT::Ticket->new(RT->SystemUser);
+    $ticket2->Load($next_id);
+
+    is($ticket2->StartsObj->ISO(Time => 0), $tomorrow->ymd, 'Starts tomorrow');
+    $tomorrow->add( days => 14 );
+    is( $ticket2->DueObj->ISO(Time => 0), $tomorrow->ymd, 'Due in default 14 days');
 }
 
 {
@@ -95,5 +102,10 @@ sub run_tests{
 
     my ($daily_id) = $m->content =~ /Ticket\s(\d+)\screated in queue/;
     ok($daily_id, "Created ticket with id: $daily_id");
+
+    my $ticket = RT::Ticket->new(RT->SystemUser);
+    $ticket->Load($daily_id);
+
+
     return $daily_id;
 }
