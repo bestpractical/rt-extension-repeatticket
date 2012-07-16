@@ -82,6 +82,9 @@ sub Repeat {
 
     my $repeat_ticket = $attr->Object;
 
+    my $tickets_needed = TicketsToMeetCoexistentNumber($attr);
+    return unless $tickets_needed;
+
     for my $checkday (@checkdays) {
         $RT::Logger->debug( 'checking ' . $checkday->ymd );
 
@@ -357,11 +360,9 @@ sub TicketsToMeetCoexistentNumber {
     my $co_number = $content->{'repeat-coexistent-number'};
     $co_number = RT->Config->Get('RepeatTicketCoexistentNumber')
       unless defined $co_number && length $co_number;  # respect 0 but ''
-
     return unless $co_number;
 
     my $tickets = GetActiveTickets($content);
-
     return $co_number - @$tickets;
 }
 

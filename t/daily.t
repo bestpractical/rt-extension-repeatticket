@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use RT::Extension::RepeatTicket::Test tests => 37;
+use RT::Extension::RepeatTicket::Test tests => 41;
 
 use_ok('RT::Extension::RepeatTicket');
 require_ok('bin/rt-repeat-ticket');
@@ -11,6 +11,8 @@ my ( $baseurl, $m ) = RT::Test->started_ok();
     diag "Run with default coexist value of 1";
     my $daily_id = run_tests($baseurl, $m);
 
+    # No additional tickets should be created with a coexist value of 1.
+
     ok(!(RT::Repeat::Ticket::Run->run()), 'Ran recurrence script for today.');
 
     my $next_id = $daily_id + 1;
@@ -19,7 +21,12 @@ my ( $baseurl, $m ) = RT::Test->started_ok();
 
     my $tomorrow = DateTime->now->add( days => 1 );
     ok(!(RT::Repeat::Ticket::Run->run('-date=' . $tomorrow->ymd)), 'Ran recurrence script for tomorrow.');
-    ok( $m->goto_ticket($next_id), "Recurrence ticket $next_id created for tomorrow.");
+    ok( !($ticket->Load($next_id)), "No ticket created for tomorrow.");
+
+    ok( $ticket->Load($daily_id), "Loaded ticket $daily_id");
+    ok($ticket->SetStatus('resolved'), "Ticket $daily_id resolved");
+    ok(!(RT::Repeat::Ticket::Run->run('-date=' . $tomorrow->ymd)), 'Ran recurrence script for tomorrow.');
+    ok( $m->goto_ticket($next_id), "Recurrence ticket $next_id created for today.");
     $m->text_like( qr/Set up recurring aperture maintenance/);
 }
 
