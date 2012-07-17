@@ -174,7 +174,7 @@ sub Repeat {
 
                 unless (
                     CheckCompleteDate(
-                        $checkday, $last_ticket, 'day',
+                        $original_date, $last_ticket, 'day',
                         $content->{'repeat-details-daily-complete'}
                     )
                   )
@@ -216,7 +216,7 @@ sub Repeat {
 
                 unless (
                     CheckCompleteDate(
-                        $checkday, $last_ticket, 'week',
+                        $original_date, $last_ticket, 'week',
                         $content->{'repeat-details-weekly-complete'}
                     )
                   )
@@ -264,7 +264,7 @@ sub Repeat {
 
                 unless (
                     CheckCompleteDate(
-                        $checkday, $last_ticket, 'month',
+                        $original_date, $last_ticket, 'month',
                         $content->{'repeat-details-monthly-complete'}
                     )
                   )
@@ -309,7 +309,7 @@ sub Repeat {
 
                 unless (
                     CheckCompleteDate(
-                        $checkday, $last_ticket, 'year',
+                        $original_date, $last_ticket, 'year',
                         $content->{'repeat-details-yearly-complete'}
                     )
                   )
