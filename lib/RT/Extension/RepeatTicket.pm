@@ -649,21 +649,145 @@ To install this module, run the following commands:
 
     perl Makefile.PL
     make
-    make install
-    make initdb
+    make install # May need sudo/root
+    make initdb  # May need sudo/root
 
 add RT::Extension::RepeatTicket to @Plugins in RT's etc/RT_SiteConfig.pm:
 
     Set( @Plugins, qw(... RT::Extension::RepeatTicket) );
-    Set( $RepeatTicketCoexistentNumber, 1 );
-
-C<$RepeatTicketCoexistentNumber> only works for repeats that don't rely on the
-completion of previous tickets, in which case the config will be simply
-ignored.
+    Set( $RepeatTicketCoexistentNumber, 1 ); # Optional
+    Set( $RepeatTicketLeadTime, 14 ); # Optional
 
 add bin/rt-repeat-ticket to the daily cron job.
 
-=head1 Methods
+=head1 DESCRIPTION
+
+The RepeatTicket extension allows you to set up recurring tickets so
+new tickets are automatically created based on a schedule. The new tickets
+are populated with the subject and initial content of the original ticket
+in the recurrence.
+
+After you activate the plugin by adding it to your RT_SiteConfig.pm file,
+all tickets will have a Recurrence tab on the create and edit pages. To
+set up a repeating ticket, click the checkbox to "Enable Recurrence"
+and fill out the schedule for the new tickets.
+
+New tickets are created when you initially save the recurrence, if new
+tickets are needed, and when your daily cron job runs the rt-repeat-ticket
+script.
+
+=head2 C<$RepeatTicketCoexistentNumber>
+
+The C<$RepeatTicketCoexistentNumber>
+determines how many tickets can be in an active status for a
+recurrence at any time. A value of 1 means one ticket at a time can be active.
+New tickets will not be created until the current active ticket is
+resolved or set to some other inactive status. You can also set this
+value per recurrence, overriding this config value.
+The extension default is 1 ticket.
+
+=head2 C<$RepeatTicketLeadTime>
+
+The C<$RepeatTicketLeadTime> becomes the ticket Starts value and sets how far
+in advance of a ticket's Due date you want the ticket to be created. This
+essentially is how long you want to give people to work on the ticket.
+
+For example, if you create a weekly recurrence scheduled on Mondays
+and set the lead time to 7 days, each Monday a ticket will be created
+with the Starts date set to that Monday and a Due date of the following
+Monday.
+
+The value you set in RT_SiteConfig.pm becomes the system default, but you can
+set this value on each ticket as well. The extension default is 14 days.
+
+=head2 rt-repeat-ticket
+
+The rt-repeat-ticket utility evaluates all of your repeating tickets and creates
+any new tickets that are needed. With no parameters, it runs for "today" each
+day. You can also pass a --date value in the form YYYY-MM-DD to run the script
+for a specific day.
+
+    bin/rt-repeat-ticket --date 2012-07-25
+
+This can be handy if your cron job doesn't run for some reason and you want to make
+sure no repeating tickets have been missed. Just go back and run the script for
+the days you missed. You can also pass dates in the future which might be handy if
+you want to experiment with recurrences in a test environment.
+
+=head1 USAGE
+
+=head2 Initial Tickets
+
+The initial ticket you create for a recurrence stores the schedule and other
+details for the recurrence.
+If you need to change the recurrence in the future, to make it more frequent or
+less frequent or anything else, make the changes on the original ticket.
+To help you find this initial ticket, which may have been resolved long
+ago, a custom field is created on each ticket
+in the recurrence with link called "Original Ticket."
+
+When setting up the recurrence, you can use the original ticket as an actual work
+ticket. When doing this, you'll need to set the Starts and Due dates when you
+create the ticket. Scheduled tickets created subsequently will set these values
+based on the recurrence. Resolving the original ticket does not cancel the
+recurrence.
+
+=head2 Start Value
+
+You can set a Start date for a new recurrence. If you don't, it defaults to the
+day you create the recurrence.
+
+=head2 Cancelling Recurrences
+
+You can cancel or end a recurrence in two ways:
+
+=over
+
+=item *
+
+Go to the original ticket in the recurrence and uncheck the Enable Recurrence
+checkbox.
+
+=item *
+
+Set ending conditions on the recurrence with either a set number of recurrences
+or an end date.
+
+=back
+
+=head2 Recursive Recurrences
+
+Creating recurrences on recurrences isn't supported and may do strange things.
+
+=head1 FAQ
+
+=over
+
+=item I'm not seeing new recurrences. Why not?
+
+A few things to check:
+
+=over
+
+=item *
+
+Do you have rt-repeat-tickets scheduled in cron? Is it running?
+
+=item *
+
+Do you have previous tickets still in an active state? Resolve those tickets
+or increase the concurrent active tickets value.
+
+=item *
+
+Is it the right day? Remember to subtract the lead time value to determine
+the day new tickets should be created.
+
+=back
+
+=back
+
+=head1 METHODS
 
 =head2 Run( RT::Attribute $attr, DateTime $checkday )
 
