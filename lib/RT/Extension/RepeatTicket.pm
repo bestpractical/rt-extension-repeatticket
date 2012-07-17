@@ -123,7 +123,9 @@ sub Repeat {
             );
 
             if ( $original_date->ymd gt $date->Date ) {
-                $RT::Logger->debug('Failed repeat-end-date check');
+                $RT::Logger->debug('Failed repeat-end-date check '
+                  . 'running with date: ' . $original_date->ymd
+                  . ' and end date: ' . $date->Date );
                 next;
             }
         }

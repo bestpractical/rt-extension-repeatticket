@@ -29,13 +29,14 @@ sub run{
     $attrs->Limit( FIELD => 'Name', VALUE => 'RepeatTicketSettings' );
 
     while ( my $attr = $attrs->Next ) {
+        my $date = $args{date}->clone;
         next unless $attr->Content->{'repeat-enabled'};
         next if $args{ticket} && $args{ticket} != $attr->Object->id;
         next
           if $args{type} && $args{type} ne $attr->Content->{'repeat-type'};
 
         $RT::Logger->info( 'Repeating ticket ' . $attr->Object->id );
-        my @ids = RT::Extension::RepeatTicket::Run( $attr, $args{date} );
+        my @ids = RT::Extension::RepeatTicket::Run( $attr, $date );
         if ( @ids ) {
             $RT::Logger->info(
                 'Repeated ticket ' . $attr->Object->id . ': ' . join ', ', @ids );
