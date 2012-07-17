@@ -783,6 +783,13 @@ or increase the concurrent active tickets value.
 Is it the right day? Remember to subtract the lead time value to determine
 the day new tickets should be created.
 
+=item *
+
+If you set a start date and another criteria like day of the week, the new
+ticket will be created on the first time that day of the week occurs
+after the start date you set (if the start date isn't on that
+day of the week).
+
 =back
 
 =back
