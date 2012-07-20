@@ -30,6 +30,10 @@ sub run{
 
     while ( my $attr = $attrs->Next ) {
         next unless $attr->Content->{'repeat-enabled'};
+        next if $args{ticket} && $args{ticket} != $attr->Object->id;
+        next
+          if $args{type} && $args{type} ne $attr->Content->{'repeat-type'};
+
         $RT::Logger->info( 'Repeating ticket ' . $attr->Object->id );
         my @ids = RT::Extension::RepeatTicket::Run( $attr, $args{date} );
         if ( @ids ) {
@@ -40,20 +44,19 @@ sub run{
     return;
 }
 
-sub process_args{
+sub process_args {
     require Getopt::Long;
     local @ARGV = @_;
 
     my %opt;
-    Getopt::Long::GetOptions( \%opt, 'help|h', 'date=s' );
+    Getopt::Long::GetOptions( \%opt, 'help|h', 'date=s', 'type=s', 'ticket=s' );
 
-    if ( $opt{help} ) {
+    if ( delete $opt{help} ) {
         require Pod::Usage;
         Pod::Usage::pod2usage( { verbose => 2 } );
         exit;
     }
 
-    my %args;
     if ( $opt{date} ) {
         my $d = RT::Date->new( RT->SystemUser );
         $d->Set(
@@ -65,14 +68,15 @@ sub process_args{
         # where $d->Unix could return a small seconds after 1970-01-01 00:00:00 UTC
         # if date parse fails
         if ( $d->Date ne '1970-01-01' ) {
-            $args{date} = DateTime->from_epoch(
+            $opt{date} = DateTime->from_epoch(
                 epoch     => $d->Unix,
                 time_zone => RT->Config->Get('Timezone'),
             );
         }
     }
-    $args{date} ||= DateTime->today( time_zone => RT->Config->Get('Timezone') );
-    return %args;
+    $opt{date} ||= DateTime->today( time_zone => RT->Config->Get('Timezone') );
+
+    return %opt;
 }
 
 1;
@@ -86,7 +90,9 @@ rt-repeat-ticket - repeat ticket
 =head1 SYNOPSIS
 
     rt-repeat-ticket  # today
+    rt-repeat-ticket --type daily # repeat ticket that has repeat type 'daily'
     rt-repeat-ticket --date 2012-06-23
+    rt-repeat-ticket --ticket 20 # repeat ticket 20
 
 =head1 DESCRIPTION
 
