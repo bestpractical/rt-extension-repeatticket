@@ -90,7 +90,7 @@ rt-repeat-ticket - repeat ticket
 =head1 SYNOPSIS
 
     rt-repeat-ticket  # today
-    rt-repeat-ticket --type daily # repeat ticket that has repeat type 'daily'
+    rt-repeat-ticket --type daily # repeat tickets of repeat type 'daily'
     rt-repeat-ticket --date 2012-06-23
     rt-repeat-ticket --ticket 20 # repeat ticket 20
 
