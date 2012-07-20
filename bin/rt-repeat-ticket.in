@@ -71,7 +71,7 @@ sub process_args {
             $opt{date} = DateTime->from_epoch(
                 epoch     => $d->Unix,
                 time_zone => RT->Config->Get('Timezone'),
-            );
+            )->truncate(to => 'day');
         }
     }
     $opt{date} ||= DateTime->today( time_zone => RT->Config->Get('Timezone') );
