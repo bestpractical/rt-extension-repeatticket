@@ -78,7 +78,7 @@ size="4" value="<% $ARGSRef->{'repeat-details-daily-day'} || 1 %>" /> <&|/l&>Day
     <tr>
         <td>
             <input name="repeat-details-daily" type="radio" value="complete" <% ($ARGSRef->{'repeat-details-daily'} || '') eq 'complete' ?  'checked="checked"' : '' |n %>/>
-            <&|/l&>Regenate new task</&><input name="repeat-details-daily-complete" type="text" size="4" value="<% $ARGSRef->{'repeat-details-daily-complete'} || 1 %>" /> <&|/l&>day(s) after each task is completed</&>
+            <&|/l&>Create new task</&><input name="repeat-details-daily-complete" type="text" size="4" value="<% $ARGSRef->{'repeat-details-daily-complete'} || 1 %>" /> <&|/l&>day(s) after each task is completed</&>
         </td>
     </tr>
   </table>
@@ -117,7 +117,7 @@ size="4" value="<% $ARGSRef->{'repeat-details-weekly-week'} || 1 %>" /> <&|/l&>w
     <tr>
         <td colspan="5">
             <input name="repeat-details-weekly" type="radio" value="complete" <% ($ARGSRef->{'repeat-details-weekly'} || '') eq 'complete' ?  'checked="checked"' : '' |n%>/>
-            <&|/l&>Regenate new task</&><input name="repeat-details-weekly-complete" type="text" size="4" value="<% $ARGSRef->{'repeat-details-weekly-complete'} || 1 %>" /> <&|/l&>week(s) after each task is completed</&>
+            <&|/l&>Create new task</&><input name="repeat-details-weekly-complete" type="text" size="4" value="<% $ARGSRef->{'repeat-details-weekly-complete'} || 1 %>" /> <&|/l&>week(s) after each task is completed</&>
         </td>
     </tr>
   </table>
@@ -153,7 +153,7 @@ size="4" value="<% $ARGSRef->{'repeat-details-weekly-week'} || 1 %>" /> <&|/l&>w
     <tr>
         <td>
             <input name="repeat-details-monthly" type="radio" value="complete" <% ($ARGSRef->{'repeat-details-monthly'} || '') eq 'complete' ? 'checked="checked"' : '' |n %> />
-            <&|/l&>Regenate new task</&><input
+            <&|/l&>Create new task</&><input
 name="repeat-details-monthly-complete" type="text" size="4" value="<% $ARGSRef->{'repeat-details-monthly-complete'} || 1 %>" /> <&|/l&>month(s) after each task is completed</&>
         </td>
     </tr>
@@ -200,7 +200,7 @@ name="repeat-details-monthly-complete" type="text" size="4" value="<% $ARGSRef->
     <tr>
         <td>
             <input name="repeat-details-yearly" type="radio" value="complete" <% ($ARGSRef->{'repeat-details-yearly'} || '') eq 'complete' ?  'checked="checked"' : '' |n %> />
-            <&|/l&>Regenate new task</&><input name="repeat-details-yearly-complete" type="text" size="4" value="<% $ARGSRef->{'repeat-details-yearly-complete'} || 1 %>" /> <&|/l&>year(s) after each task is completed</&>
+            <&|/l&>Create new task</&><input name="repeat-details-yearly-complete" type="text" size="4" value="<% $ARGSRef->{'repeat-details-yearly-complete'} || 1 %>" /> <&|/l&>year(s) after each task is completed</&>
         </td>
     </tr>
   </table>
