@@ -99,7 +99,7 @@ sub Repeat {
                 Format => 'unknown',
                 Value  => $content->{'repeat-start-date'},
             );
-            if ( $checkday->ymd lt $date->Date ) {
+            if ( $checkday->ymd le $date->Date ) {
                 $RT::Logger->debug('Not yet at start date' . $date->Date);
                 next;
             }
