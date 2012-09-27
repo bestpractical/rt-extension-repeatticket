@@ -258,9 +258,10 @@ if ( $Ticket ) {
     if ( $repeat ) {
         $ARGSRef = $repeat->Content if $repeat;
     }
-    else {
-        $Initial = 1;
-    }
+}
+
+if ( not $ARGSRef ){
+     $Initial = 1;
 }
 
 $ARGSRef->{'repeat-type'} ||= 'daily';

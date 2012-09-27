@@ -19,13 +19,18 @@ my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
         my %args = @_;
         my ( $ticket, @actions ) = $old_create_ticket->(@_);
         if ( $ticket && $args{'repeat-enabled'} ) {
-            my ($attr) = SetRepeatAttribute(
+            my ($attr, $message) = SetRepeatAttribute(
                 $ticket,
                 'tickets'     => [ $ticket->id ],
                 'last-ticket' => $ticket->id,
                 map { $_ => $args{$_} } grep { /^repeat/ } keys %args
             );
-            Run($attr);
+            if ( $attr ) {
+                Run($attr);
+            }
+            else {
+                push @actions, $message;
+            }
         }
         return ( $ticket, @actions );
     };
@@ -41,6 +46,13 @@ sub SetRepeatAttribute {
         %args
     );
 
+    my ($valid, $message) = ValidateArgs(\%repeat_args);
+
+    if ( not $valid ){
+        $message = "Recurrence not updated: " . $message;
+        return (undef, $message);
+    }
+
     my ($old_attr) = $ticket->Attributes->Named('RepeatTicketSettings');
     my %old;
     %old = %{ $old_attr->Content } if $old_attr;
@@ -55,6 +67,25 @@ sub SetRepeatAttribute {
     my ($attr) = $ticket->Attributes->Named('RepeatTicketSettings');
 
     return ( $attr, $ticket->loc('Recurrence updated') );    # loc
+}
+
+sub ValidateArgs {
+    my $args_ref = shift;
+    my $result = 1;
+    my $message;
+
+    # If recur every X weeks is selected, a weekday is required
+    if ( $args_ref->{'repeat-type'} eq 'weekly'
+         and $args_ref->{'repeat-details-weekly-week'} ){
+
+        my $weeks = $args_ref->{'repeat-details-weekly-weeks'};
+        unless ( defined $weeks ) {
+            $message .= 'No weekday selected for weekly recurrence';
+            $result = 0;
+        }
+    }
+
+    return ( $result, $message );
 }
 
 use RT::Ticket;
