@@ -64,9 +64,50 @@ sub SetRepeatAttribute {
         Content => $content,
     );
 
+    ProcessTransactions($ticket, \%old, \%repeat_args) if $old_attr;
+
     my ($attr) = $ticket->Attributes->Named('RepeatTicketSettings');
 
     return ( $attr, $ticket->loc('Recurrence updated') );    # loc
+}
+
+sub ProcessTransactions {
+    my $ticket = shift;
+    my $old_ref = shift;
+    my $new_ref = shift;
+
+    foreach my $key (keys %$old_ref){
+
+        # Keys should be the same since they are coming
+        # from the same form, but just in case.
+        next unless exists $new_ref->{$key};
+
+        {
+        # We know some values will be uninitialized
+        no warnings 'uninitialized';
+
+        # temp values to avoid changing the source hashes
+        my $old = $old_ref->{$key};
+        my $new = $new_ref->{$key};
+
+        $old = join ',', @$old if ref $old eq 'ARRAY';
+        $new = join ',', @$new if ref $new eq 'ARRAY';
+
+        if ( $old ne $new ){
+
+            # Add a transaction
+            my ( $Trans, $Msg, $TransObj ) = $ticket->_NewTransaction(
+               Type         => "Set",
+               Field        => $key,
+               OldValue     => $old,
+               NewValue     => $new,
+               CommitScrips => 0,
+               ActivateScrips => 0,
+            );
+        }
+        }
+    }
+    return;
 }
 
 sub ValidateArgs {
