@@ -28,10 +28,10 @@ MANIFEST			This list of files
 MANIFEST.SKIP
 META.yml
 README
-t/daily.t
-t/end_conditions.t
-t/monthly.t
-t/on_complete.t
-t/start_date.t
-t/weekly.t
-t/yearly.t
+xt/daily.t
+xt/end_conditions.t
+xt/monthly.t
+xt/on_complete.t
+xt/start_date.t
+xt/weekly.t
+xt/yearly.t
