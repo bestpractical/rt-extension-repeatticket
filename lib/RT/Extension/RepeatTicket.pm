@@ -3,7 +3,7 @@ use strict;
 
 package RT::Extension::RepeatTicket;
 
-our $VERSION = "0.02_02";
+our $VERSION = "0.03";
 
 use RT::Interface::Web;
 use DateTime;
@@ -757,10 +757,6 @@ __END__
 
 RT::Extension::RepeatTicket - Repeat tickets based on schedule
 
-=head1 VERSION
-
-Version 0.01
-
 =head1 INSTALLATION
 
 To install this module, run the following commands:
@@ -944,10 +940,11 @@ Return ( RT::Attribute, UPDATE MESSAGE )
 
 sunnavy, <sunnavy at bestpractical.com>
 
+Jim Brandt, <jbrandt at bestpractical.com>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Best Practical Solutions, LLC.
+Copyright 2013 Best Practical Solutions, LLC.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
