@@ -1,6 +1,7 @@
 use inc::Module::Install;
 RTx('RT-Extension-RepeatTicket');
 all_from('lib/RT/Extension/RepeatTicket.pm');
+readme_from('lib/RT/Extension/RepeatTicket.pm');
 requires('DateTime::Event::ICal');
 
 my ($lp) = ($INC{'RT.pm'} =~ /^(.*)[\\\/]/);
