@@ -65,6 +65,18 @@ sub SetRepeatAttribute {
     );
 
     ProcessTransactions($ticket, \%old, \%repeat_args) if $old_attr;
+    if ( $content->{'repeat-enabled'} ) {
+        $ticket->AddCustomFieldValue(
+            Field => 'Original Ticket',
+            Value => $ticket->id,
+        );
+    }
+    else {
+        $ticket->DeleteCustomFieldValue(
+            Field => 'Original Ticket',
+            Value => $ticket->id,
+        );
+    }
 
     my ($attr) = $ticket->Attributes->Named('RepeatTicketSettings');
 

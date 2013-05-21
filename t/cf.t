@@ -47,6 +47,8 @@ my $ticket_id = $m->content =~ /Ticket\s(\d+)\screated in queue/;
 ok( $ticket_id, "Created ticket with id: $ticket_id" );
 my $ticket = RT::Ticket->new(RT->SystemUser);
 $ticket->Load($ticket_id);
+is( $ticket->FirstCustomFieldValue('Original Ticket'),
+    $ticket_id, 'Original Ticket is set' );
 
 my $tomorrow = $day->clone->add( days => 1 );
 ok(!(RT::Repeat::Ticket::Run->run('-date=' . $tomorrow->ymd)),
@@ -59,6 +61,16 @@ $ticket2->Load($second);
 is( $ticket2->FirstCustomFieldValue('Original Ticket'),
     $ticket_id, 'Original Ticket is set' );
 is( $ticket2->FirstCustomFieldValue('foo'), 'bar', 'cf foo is cloned' );
+
+my ($attr) = $ticket->Attributes->Named('RepeatTicketSettings');
+ok( RT::Extension::RepeatTicket::SetRepeatAttribute(
+    $ticket,
+    %{ $attr->Content },
+    'repeat-enabled' => 0,
+));
+
+is( $ticket->FirstCustomFieldValue('Original Ticket'),
+    undef, 'Original Ticket is unset' );
 
 undef $m;
 done_testing;
