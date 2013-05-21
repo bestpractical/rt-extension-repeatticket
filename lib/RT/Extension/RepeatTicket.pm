@@ -509,14 +509,14 @@ sub _RepeatTicket {
 
     my $cfs = $repeat_ticket->QueueObj->TicketCustomFields();
     while ( my $cf = $cfs->Next ) {
+        next if $cf->Name eq 'Original Ticket';
         my $cf_id     = $cf->id;
         my $cf_values = $repeat_ticket->CustomFieldValues( $cf->id );
         my @cf_values;
         while ( my $cf_value = $cf_values->Next ) {
             push @cf_values, $cf_value->Content;
         }
-        $repeat->{"Object-RT::Ticket--CustomField-$cf_id-Value"} = join "\n",
-          @cf_values;
+        $repeat->{"CustomField-$cf_id"} = \@cf_values;
     }
 
     $repeat->{Status} = 'new';
