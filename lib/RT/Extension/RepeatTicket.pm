@@ -470,6 +470,7 @@ sub GetActiveTickets {
     return $tickets_ref;
 }
 
+my $mason;
 sub _RepeatTicket {
     my $repeat_ticket = shift;
     return unless $repeat_ticket;
@@ -488,7 +489,38 @@ sub _RepeatTicket {
     };
 
     $repeat->{$_} = $repeat_ticket->$_()
-      for qw/Owner Subject FinalPriority TimeEstimated/;
+      for qw/Owner FinalPriority TimeEstimated/;
+
+    my $subject_format = RT->Config->Get('RepeatTicketSubjectFormat');
+    if ($subject_format) {
+        # append original subject if the new one doesn't include it.
+        if ( $subject_format !~ /__Subject__/ ) {
+            $subject_format .= ' __Subject__';
+        }
+
+        my $subject = $subject_format;
+        unless ( $mason ) {
+            require File::Temp;
+            my $data_dir = File::Temp::tempdir(CLEANUP => 1);
+            $mason = HTML::Mason::Interp->new(
+                RT::Interface::Web::Handler->DefaultHandlerArgs,
+                autohandler_name => '', # disable forced login and more
+                data_dir => $data_dir,
+            );
+            $mason->set_escape( h => \&RT::Interface::Web::EscapeUTF8 );
+            $mason->set_escape( u => \&RT::Interface::Web::EscapeURI  );
+        }
+        $subject =~ s!__(.*?)__!$mason->exec(
+            "/Elements/ColumnMap",
+            Class => 'RT__Ticket',
+            Name  => $1,
+            Attr  => 'value'
+        )->($repeat_ticket);!eg;
+        $repeat->{Subject} = $subject;
+    }
+    else {
+        $repeat->{Subject} = $repeat_ticket->Subject;
+    }
 
     my $members = $repeat_ticket->Members;
     my ( @members, @members_of, @refers, @refers_by, @depends, @depends_by );
@@ -743,6 +775,7 @@ add RT::Extension::RepeatTicket to @Plugins in RT's etc/RT_SiteConfig.pm:
     Set( @Plugins, qw(... RT::Extension::RepeatTicket) );
     Set( $RepeatTicketCoexistentNumber, 1 ); # Optional
     Set( $RepeatTicketLeadTime, 14 ); # Optional
+    Set( $RepeatTicketSubjectFormat, '__Subject__' );
 
 add bin/rt-repeat-ticket to the daily cron job.
 
