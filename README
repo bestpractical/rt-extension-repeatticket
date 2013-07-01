@@ -15,6 +15,7 @@ INSTALLATION
         Set( @Plugins, qw(... RT::Extension::RepeatTicket) );
         Set( $RepeatTicketCoexistentNumber, 1 ); # Optional
         Set( $RepeatTicketLeadTime, 14 ); # Optional
+        Set( $RepeatTicketSubjectFormat, '__Subject__' );
 
     add bin/rt-repeat-ticket to the daily cron job.
 
@@ -55,6 +56,27 @@ DESCRIPTION
     The value you set in RT_SiteConfig.pm becomes the system default, but
     you can set this value on each ticket as well. The extension default is
     14 days.
+
+  $RepeatTicketSubjectFormat
+    By default, repeated tickets will have the same subject as the original
+    ticket. You can modify this subject by setting a format with the
+    $RepeatTicketSubjectFormat option. This option accepts formats in the
+    same form as formats for RT searches. The placeholders take values from
+    the repeated ticket, not the original ticket, so you can use the format
+    to help differentiate the subjects in repeated tickets.
+
+    For example, if you wanted to put the due date in the subject, you could
+    set the format to:
+
+        Set($RepeatTicketSubjectFormat, '__Due__ __Subject__');
+
+    You'll want to use values that you don't expect to change since the
+    subject won't change if the ticket value (e.g., Due) is changed.
+
+    Since this uses RT formats, you can create a custom format by creating a
+    new RT ColumnMap. You can see the available formats by looking at the
+    columns available in the Display Columns portlet on the RT ticket search
+    page.
 
   rt-repeat-ticket
     The rt-repeat-ticket utility evaluates all of your repeating tickets and

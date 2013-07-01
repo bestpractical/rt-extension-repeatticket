@@ -489,38 +489,7 @@ sub _RepeatTicket {
     };
 
     $repeat->{$_} = $repeat_ticket->$_()
-      for qw/Owner FinalPriority TimeEstimated/;
-
-    my $subject_format = RT->Config->Get('RepeatTicketSubjectFormat');
-    if ($subject_format) {
-        # append original subject if the new one doesn't include it.
-        if ( $subject_format !~ /__Subject__/ ) {
-            $subject_format .= ' __Subject__';
-        }
-
-        my $subject = $subject_format;
-        unless ( $mason ) {
-            require File::Temp;
-            my $data_dir = File::Temp::tempdir(CLEANUP => 1);
-            $mason = HTML::Mason::Interp->new(
-                RT::Interface::Web::Handler->DefaultHandlerArgs,
-                autohandler_name => '', # disable forced login and more
-                data_dir => $data_dir,
-            );
-            $mason->set_escape( h => \&RT::Interface::Web::EscapeUTF8 );
-            $mason->set_escape( u => \&RT::Interface::Web::EscapeURI  );
-        }
-        $subject =~ s!__(.*?)__!$mason->exec(
-            "/Elements/ColumnMap",
-            Class => 'RT__Ticket',
-            Name  => $1,
-            Attr  => 'value'
-        )->($repeat_ticket);!eg;
-        $repeat->{Subject} = $subject;
-    }
-    else {
-        $repeat->{Subject} = $repeat_ticket->Subject;
-    }
+      for qw/Owner FinalPriority TimeEstimated Subject/;
 
     my $members = $repeat_ticket->Members;
     my ( @members, @members_of, @refers, @refers_by, @depends, @depends_by );
@@ -589,7 +558,41 @@ sub _RepeatTicket {
         $top->ContentAsMIME( Children => 1 )->as_string );
 
     my $ticket = RT::Ticket->new( $repeat_ticket->CurrentUser );
-    return $ticket->Create(%args);
+    my ($new_id, $new_txn, $new_msg) = $ticket->Create(%args);
+
+    if ($new_id){
+        # Update subject if custom format defined
+        my $subject_format = RT->Config->Get('RepeatTicketSubjectFormat');
+        if ($subject_format) {
+            # append original subject if the new one doesn't include it.
+            if ( $subject_format !~ /__Subject__/ ) {
+                $subject_format .= ' __Subject__';
+            }
+
+            my $subject = $subject_format;
+            unless ( $mason ) {
+                require File::Temp;
+                require RT::Interface::Web::Handler;
+                my $data_dir = File::Temp::tempdir(CLEANUP => 1);
+                $mason = HTML::Mason::Interp->new(
+                    RT::Interface::Web::Handler->DefaultHandlerArgs,
+                    autohandler_name => '', # disable forced login and more
+                    data_dir => $data_dir,
+                );
+                $mason->set_escape( h => \&RT::Interface::Web::EscapeUTF8 );
+                $mason->set_escape( u => \&RT::Interface::Web::EscapeURI  );
+            }
+            $subject =~ s!__(.*?)__!$mason->exec(
+                                                 "/Elements/ColumnMap",
+                                                 Class => 'RT__Ticket',
+                                                 Name  => $1,
+                                                 Attr  => 'value'
+                                                )->($ticket);!eg;
+            $ticket->SetSubject($subject);
+        }
+    }
+
+    return ($new_id, $new_txn, $new_msg);
 }
 
 sub MaybeRepeatMore {
@@ -814,6 +817,28 @@ Monday.
 
 The value you set in RT_SiteConfig.pm becomes the system default, but you can
 set this value on each ticket as well. The extension default is 14 days.
+
+=head2 C<$RepeatTicketSubjectFormat>
+
+By default, repeated tickets will have the same subject as the original
+ticket. You can modify this subject by setting a format with the
+C<$RepeatTicketSubjectFormat> option. This option accepts formats in the
+same form as formats for RT searches. The placeholders take values from
+the repeated ticket, not the original ticket, so you can use the format
+to help differentiate the subjects in repeated tickets.
+
+For example, if you wanted to put the due date in the subject, you could
+set the format to:
+
+    Set($RepeatTicketSubjectFormat, '__Due__ __Subject__');
+
+You'll want to use values that you don't expect to change since the subject
+won't change if the ticket value (e.g., Due) is changed.
+
+Since this uses RT formats, you can create a custom format by creating
+a new RT ColumnMap. You can see the available formats by looking at
+the columns available in the Display Columns portlet on the RT ticket
+search page.
 
 =head2 rt-repeat-ticket
 

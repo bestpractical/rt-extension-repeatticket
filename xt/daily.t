@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use RT::Extension::RepeatTicket::Test tests => 43;
+use RT::Extension::RepeatTicket::Test tests => undef;
 
 use_ok('RT::Extension::RepeatTicket');
 require_ok('bin/rt-repeat-ticket');
@@ -35,6 +35,8 @@ my ( $baseurl, $m ) = RT::Test->started_ok();
     is($ticket2->StartsObj->ISO(Time => 0), $tomorrow->ymd, 'Starts tomorrow');
     $tomorrow->add( days => 14 );
     is( $ticket2->DueObj->ISO(Time => 0), $tomorrow->ymd, 'Due in default 14 days');
+    is( $ticket2->Subject(), 'Set up recurring aperture maintenance',
+        'Got default subject: ' . $ticket2->Subject());
 }
 
 {
@@ -109,3 +111,6 @@ sub run_tests{
 
     return $daily_id;
 }
+
+undef $m;
+done_testing;

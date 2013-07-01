@@ -1,10 +1,12 @@
 use strict;
 use warnings;
 
-use RT::Extension::RepeatTicket::Test tests => 20;
+use RT::Extension::RepeatTicket::Test tests => undef;
 
 use_ok('RT::Extension::RepeatTicket');
 require_ok('bin/rt-repeat-ticket');
+
+RT::Config->Set('RepeatTicketSubjectFormat', '__Due__ __Subject__');
 
 my ( $baseurl, $m ) = RT::Test->started_ok();
 
@@ -58,3 +60,9 @@ $ticket2->Load($second);
 is($ticket2->StartsObj->ISO(Time => 0), $day->ymd, 'Starts 14 days before due: ' . $day->ymd);
 $day->add( days => 14 );
 is( $ticket2->DueObj->ISO(Time => 0), $day->ymd, 'Due on: ' . $day->ymd);
+
+is( $ticket2->Subject, $ticket2->DueAsString . ' Set up monthly aperture maintenance',
+    'Ticket subject matches subject configuration: ' . $ticket2->Subject);
+
+undef $m;
+done_testing;
