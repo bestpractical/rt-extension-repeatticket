@@ -30,6 +30,7 @@ $m->submit_form_ok(
         form_name => 'TicketCreate',
         fields    => {
             'Subject' => 'test cf values',
+            'Content' => 'Testing CF values',
             'Object-RT::Ticket--CustomField-' . $cf->id . '-Value' => 'bar',
             'repeat-coexistent-number'                             => 2,
             'repeat-enabled'                                       => 1,
