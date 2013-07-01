@@ -28,6 +28,7 @@ MANIFEST			This list of files
 MANIFEST.SKIP
 META.yml
 README
+xt/cf.t
 xt/daily.t
 xt/end_conditions.t
 xt/monthly.t

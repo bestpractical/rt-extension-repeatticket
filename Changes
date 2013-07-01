@@ -1,6 +1,12 @@
 Revision history for RT-Extension-RepeatTicket
         MM/DD/YYY
 
+0.04    07/01/2013
+        * Fixed bug with CFs on repeated tickets
+        * Added subject format config option
+        * Move tests to xt
+        * Add note on supported versions of RT
+
 0.03    03/28/2013
         First version, released on an unsuspecting world.
 
