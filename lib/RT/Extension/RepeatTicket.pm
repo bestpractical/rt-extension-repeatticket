@@ -778,6 +778,10 @@ add RT::Extension::RepeatTicket to @Plugins in RT's etc/RT_SiteConfig.pm:
 
 add bin/rt-repeat-ticket to the daily cron job.
 
+This extension is known to work on RT 4.0.6 and later. Makefile.PL will
+warn you if your RT is older than this. It relies on jQuery, so it
+won't work as-is on RT 3.8 or earlier.
+
 =head1 DESCRIPTION
 
 The RepeatTicket extension allows you to set up recurring tickets so
