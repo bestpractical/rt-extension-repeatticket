@@ -61,7 +61,7 @@ is($ticket2->StartsObj->ISO(Time => 0), $day->ymd, 'Starts 14 days before due: '
 $day->add( days => 14 );
 is( $ticket2->DueObj->ISO(Time => 0), $day->ymd, 'Due on: ' . $day->ymd);
 
-is( $ticket2->Subject, $ticket2->DueAsString . ' Set up monthly aperture maintenance',
+is( $ticket2->Subject, $ticket2->DueObj->AsString . ' Set up monthly aperture maintenance',
     'Ticket subject matches subject configuration: ' . $ticket2->Subject);
 
 undef $m;
