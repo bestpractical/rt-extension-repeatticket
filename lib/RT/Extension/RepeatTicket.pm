@@ -464,7 +464,8 @@ sub GetActiveTickets {
     @$tickets_ref = grep {
         my $t = RT::Ticket->new( RT->SystemUser );
         $t->Load($_);
-        !$t->QueueObj->Lifecycle->IsInactive( $t->Status );
+        my $lifecycle = $t->QueueObj->can('LifecycleObj') ? $t->QueueObj->LifecycleObj : $t->QueueObj->Lifecycle;
+        !$lifecycle->IsInactive( $t->Status );
     } @$tickets_ref;
 
     return $tickets_ref;
@@ -729,7 +730,9 @@ sub MaybeRepeatMore {
 
 sub CheckCompleteStatus {
     my $ticket = shift;
-    return 1 if $ticket->QueueObj->Lifecycle->IsInactive( $ticket->Status );
+    my $lifecycle =
+        $ticket->QueueObj->can('LifecycleObj') ? $ticket->QueueObj->LifecycleObj : $ticket->QueueObj->Lifecycle;
+    return 1 if $lifecycle->IsInactive( $ticket->Status );
     return 0;
 }
 
