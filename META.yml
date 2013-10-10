@@ -24,4 +24,4 @@ requires:
   DateTime::Event::ICal: 0
 resources:
   license: http://opensource.org/licenses/gpl-license.php
-version: 0.04
+version: 0.05

@@ -1,5 +1,7 @@
 Revision history for RT-Extension-RepeatTicket
         MM/DD/YYY
+0.05    10/10/2013
+        * Updates for RT 4.2
 
 0.04    07/01/2013
         * Fixed bug with CFs on repeated tickets
