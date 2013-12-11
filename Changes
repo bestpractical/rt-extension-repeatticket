@@ -1,5 +1,8 @@
 Revision history for RT-Extension-RepeatTicket
         MM/DD/YYY
+0.06    12/11/2013
+        * Fix copying of RefersTo links on repeated tickets
+
 0.05    10/10/2013
         * Updates for RT 4.2
 
