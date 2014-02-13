@@ -11,7 +11,8 @@ use RT::Date;
 use List::MoreUtils qw/after/;
 use DateTime::Event::ICal;
 
-RT->AddStyleSheets('repeat-ticket.css');
+RT->AddStyleSheets('repeat-ticket.css')
+    if $RT::StaticPath;
 
 my $old_create_ticket = \&HTML::Mason::Commands::CreateTicket;
 {
