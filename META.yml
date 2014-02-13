@@ -19,9 +19,11 @@ no_index:
     - etc
     - html
     - inc
+    - po
+    - static
     - xt
 requires:
   DateTime::Event::ICal: 0
 resources:
   license: http://opensource.org/licenses/gpl-license.php
-version: 0.06
+version: 0.07
