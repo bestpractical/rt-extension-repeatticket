@@ -12,3 +12,4 @@ pod2htm*.tmp
 RT-Extension-RepeatTicket-*
 /bin/rt-repeat-ticket
 /lib/RT/Extension/RepeatTicket/Test.pm
+/MYMETA.*
