@@ -209,10 +209,10 @@ jQuery( function () {
 </div>
 
 <%init>
-my @week_labels = qw/Sun Mon Tue Wed Thu Fri Sat/; # loc
-my @week_values = qw/su mo tu we th fr sa/;
-my @week_number_labels = qw/First Second Third Fourth Last/; # loc
-my @month_labels = qw/January February March April  May June July August September October November December/; # loc
+my @week_labels = qw(Sun Mon Tue Wed Thu Fri Sat); # loc_qw
+my @week_values = qw(su mo tu we th fr sa);
+my @week_number_labels = qw(First Second Third Fourth Last); # loc_qw
+my @month_labels = qw(January February March April  May June July August September October November December); # loc_qw
 
 if ( $Ticket ) {
     my ($repeat) = $Ticket->Attributes->Named('RepeatTicketSettings');
