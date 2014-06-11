@@ -3,7 +3,7 @@
         Name => 'Original Ticket',
         Type   => 'FreeformSingle',
         Queue  => '0',
-        LinkValueTo => '/Ticket/Display.html?id=__CustomField__',
+        LinkValueTo => RT->Config->Get('WebPath') . '/Ticket/Display.html?id=__CustomField__',
     }
 );
 
