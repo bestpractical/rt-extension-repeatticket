@@ -231,7 +231,7 @@ $ARGSRef->{'repeat-details-weekly'} ||= 'week';
 $ARGSRef->{'repeat-details-monthly'} ||= 'day';
 $ARGSRef->{'repeat-details-yearly'} ||= 'day';
 $ARGSRef->{'repeat-end'} ||= 'none';
-$ARGSRef->{'repeat-lead-time'} ||= RT->Config->Get('RepeatTicketLeadTime') || 14;
+$ARGSRef->{'repeat-lead-time'} //= RT->Config->Get('RepeatTicketLeadTime') // 14;
 $ARGSRef->{'repeat-coexistent-number'} ||= RT->Config->Get('RepeatTicketCoexistentNumber') || 1;
 
 my $input = sub {
