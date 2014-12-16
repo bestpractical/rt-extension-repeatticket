@@ -1,28 +1,6 @@
 NAME
     RT::Extension::RepeatTicket - Repeat tickets based on schedule
 
-INSTALLATION
-    To install this module, run the following commands:
-
-        perl Makefile.PL
-        make
-        make install # May need sudo/root
-        make initdb  # May need sudo/root
-
-    add RT::Extension::RepeatTicket to @Plugins in RT's
-    etc/RT_SiteConfig.pm:
-
-        Set( @Plugins, qw(... RT::Extension::RepeatTicket) );
-        Set( $RepeatTicketCoexistentNumber, 1 ); # Optional
-        Set( $RepeatTicketLeadTime, 14 ); # Optional
-        Set( $RepeatTicketSubjectFormat, '__Subject__' );
-
-    add bin/rt-repeat-ticket to the daily cron job.
-
-    This extension is known to work on RT 4.0.6 and later. Makefile.PL will
-    warn you if your RT is older than this. It relies on jQuery, so it won't
-    work as-is on RT 3.8 or earlier.
-
 DESCRIPTION
     The RepeatTicket extension allows you to set up recurring tickets so new
     tickets are automatically created based on a schedule. The new tickets
@@ -38,6 +16,39 @@ DESCRIPTION
     tickets are needed, and when your daily cron job runs the
     rt-repeat-ticket script.
 
+INSTALLATION
+    perl Makefile.PL
+    make
+    make install
+        May need root permissions
+
+    make initdb
+        Only run this the first time you install this module.
+
+        If you run this twice, you may end up with duplicate data in your
+        database.
+
+        If you are upgrading this module, check for upgrading instructions
+        in case changes need to be made to your database.
+
+    Edit your /opt/rt4/etc/RT_SiteConfig.pm
+        If you are using RT 4.2 or greater, add this line:
+
+            Plugin('RT::Extension::RepeatTicket');
+
+        For RT 4.0, add this line:
+
+            Set(@Plugins, qw(RT::Extension::RepeatTicket));
+
+        or add RT::Extension::RepeatTicket to your existing @Plugins line.
+
+    Clear your mason cache
+            rm -rf /opt/rt4/var/mason_data/obj
+
+    Add bin/rt-repeat-ticket to the daily cron job.
+    Restart your webserver
+
+CONFIGURATION
   $RepeatTicketCoexistentNumber
     The $RepeatTicketCoexistentNumber determines how many tickets can be in
     an active status for a recurrence at any time. A value of 1 means one
@@ -149,7 +160,7 @@ FAQ
 METHODS
   Run( RT::Attribute $attr, DateTime $checkday )
     Repeat the ticket if $checkday meets the repeat settings. It also tries
-    to repeat more to meet config "RepeatTicketCoexistentNumber".
+    to repeat more to meet config RepeatTicketCoexistentNumber.
 
     Return ids of new created tickets.
 
@@ -169,16 +180,21 @@ METHODS
     Return ( RT::Attribute, UPDATE MESSAGE )
 
 AUTHOR
-    sunnavy, <sunnavy at bestpractical.com>
+    Best Practical Solutions, LLC <modules@bestpractical.com>
 
-    Jim Brandt, <jbrandt at bestpractical.com>
+BUGS
+    All bugs should be reported via email to
+
+        L<bug-RT-Extension-RepeatTicket@rt.cpan.org|mailto:bug-RT-Extension-RepeatTicket@rt.cpan.org>
+
+    or via the web at
+
+        L<rt.cpan.org|http://rt.cpan.org/Public/Dist/Display.html?Name=RT-Extension-RepeatTicket>.
 
 LICENSE AND COPYRIGHT
-    Copyright 2013 Best Practical Solutions, LLC.
+    This software is Copyright (c) 2014 by Best Practical Solutions
 
-    This program is free software; you can redistribute it and/or modify it
-    under the terms of either: the GNU General Public License as published
-    by the Free Software Foundation; or the Artistic License.
+    This is free software, licensed under:
 
-    See http://dev.perl.org/licenses/ for more information.
+      The GNU General Public License, Version 2, June 1991
 

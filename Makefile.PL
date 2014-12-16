@@ -1,8 +1,8 @@
 use inc::Module::Install;
 RTx('RT-Extension-RepeatTicket');
-all_from('lib/RT/Extension/RepeatTicket.pm');
-readme_from('lib/RT/Extension/RepeatTicket.pm');
+
 requires('DateTime::Event::ICal');
+
 requires_rt('4.0.6');
 
 my ($lp) = ($INC{'RT.pm'} =~ /^(.*)[\\\/]/);
@@ -30,5 +30,6 @@ substitute(
            qw(lib/RT/Extension/RepeatTicket/Test.pm),
 );
 
-&auto_install();
-&WriteAll;
+auto_install();
+sign();
+WriteAll();

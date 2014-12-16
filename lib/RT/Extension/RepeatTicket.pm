@@ -3,7 +3,7 @@ use strict;
 
 package RT::Extension::RepeatTicket;
 
-our $VERSION = "0.07";
+our $VERSION = "1.00";
 
 use RT::Interface::Web;
 use DateTime;
@@ -766,28 +766,6 @@ __END__
 
 RT::Extension::RepeatTicket - Repeat tickets based on schedule
 
-=head1 INSTALLATION
-
-To install this module, run the following commands:
-
-    perl Makefile.PL
-    make
-    make install # May need sudo/root
-    make initdb  # May need sudo/root
-
-add RT::Extension::RepeatTicket to @Plugins in RT's etc/RT_SiteConfig.pm:
-
-    Set( @Plugins, qw(... RT::Extension::RepeatTicket) );
-    Set( $RepeatTicketCoexistentNumber, 1 ); # Optional
-    Set( $RepeatTicketLeadTime, 14 ); # Optional
-    Set( $RepeatTicketSubjectFormat, '__Subject__' );
-
-add bin/rt-repeat-ticket to the daily cron job.
-
-This extension is known to work on RT 4.0.6 and later. Makefile.PL will
-warn you if your RT is older than this. It relies on jQuery, so it
-won't work as-is on RT 3.8 or earlier.
-
 =head1 DESCRIPTION
 
 The RepeatTicket extension allows you to set up recurring tickets so
@@ -803,6 +781,52 @@ and fill out the schedule for the new tickets.
 New tickets are created when you initially save the recurrence, if new
 tickets are needed, and when your daily cron job runs the rt-repeat-ticket
 script.
+
+=head1 INSTALLATION
+
+=over
+
+=item C<perl Makefile.PL>
+
+=item C<make>
+
+=item C<make install>
+
+May need root permissions
+
+=item C<make initdb>
+
+Only run this the first time you install this module.
+
+If you run this twice, you may end up with duplicate data
+in your database.
+
+If you are upgrading this module, check for upgrading instructions
+in case changes need to be made to your database.
+
+=item Edit your F</opt/rt4/etc/RT_SiteConfig.pm>
+
+If you are using RT 4.2 or greater, add this line:
+
+    Plugin('RT::Extension::RepeatTicket');
+
+For RT 4.0, add this line:
+
+    Set(@Plugins, qw(RT::Extension::RepeatTicket));
+
+or add C<RT::Extension::RepeatTicket> to your existing C<@Plugins> line.
+
+=item Clear your mason cache
+
+    rm -rf /opt/rt4/var/mason_data/obj
+
+=item Add F<bin/rt-repeat-ticket> to the daily cron job.
+
+=item Restart your webserver
+
+=back
+
+=head1 CONFIGURATION
 
 =head2 C<$RepeatTicketCoexistentNumber>
 
@@ -973,18 +997,24 @@ Return ( RT::Attribute, UPDATE MESSAGE )
 
 =head1 AUTHOR
 
-sunnavy, <sunnavy at bestpractical.com>
+Best Practical Solutions, LLC E<lt>modules@bestpractical.comE<gt>
 
-Jim Brandt, <jbrandt at bestpractical.com>
+=head1 BUGS
+
+All bugs should be reported via email to
+
+    L<bug-RT-Extension-RepeatTicket@rt.cpan.org|mailto:bug-RT-Extension-RepeatTicket@rt.cpan.org>
+
+or via the web at
+
+    L<rt.cpan.org|http://rt.cpan.org/Public/Dist/Display.html?Name=RT-Extension-RepeatTicket>.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2013 Best Practical Solutions, LLC.
+This software is Copyright (c) 2014 by Best Practical Solutions
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
+This is free software, licensed under:
 
-See http://dev.perl.org/licenses/ for more information.
+  The GNU General Public License, Version 2, June 1991
 
-
+=cut
