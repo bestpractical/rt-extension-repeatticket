@@ -27,6 +27,8 @@ sub run{
 
     my $attrs = RT::Attributes->new( RT->SystemUser );
     $attrs->Limit( FIELD => 'Name', VALUE => 'RepeatTicketSettings' );
+    my $cf = RT::CustomField->new(RT->SystemUser);
+    $cf->Load('Original Ticket');
 
     while ( my $attr = $attrs->Next ) {
         my $date = $args{date}->clone;
@@ -34,6 +36,7 @@ sub run{
         next if $args{ticket} && $args{ticket} != $attr->Object->id;
         next
           if $args{type} && $args{type} ne $attr->Content->{'repeat-type'};
+        next unless $cf->can('IsAdded') ? ( $cf->IsAdded(0) || $cf->IsAdded($attr->Object->Queue) ) : ( $cf->IsApplied(0) || $cf->IsApplied($attr->Object->Queue));
 
         $RT::Logger->info( 'Repeating ticket ' . $attr->Object->id );
         my @ids = RT::Extension::RepeatTicket::Run( $attr, $date );

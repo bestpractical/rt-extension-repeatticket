@@ -7,4 +7,7 @@ $Ticket
 </%args>
 <%init>
 my $can_modify = $Ticket->CurrentUserHasRight('ModifyTicket');
+my $cf = RT::CustomField->new($session{CurrentUser});
+$cf->Load('Original Ticket');
+return unless $cf->id && ( $cf->can('IsAdded') ? ( $cf->IsAdded(0) || $cf->IsAdded($Ticket->Queue) ) : ( $cf->IsApplied(0) || $cf->IsApplied($Ticket->Queue)) );
 </%init>

@@ -5,6 +5,9 @@ if ( $request_path =~ m{^/Ticket/} ) {
         my $id  = $1;
         my $obj = RT::Ticket->new( $session{'CurrentUser'} );
         $obj->Load($id);
+        my $cf = RT::CustomField->new($session{CurrentUser});
+        $cf->Load('Original Ticket');
+        return unless $cf->id && ( $cf->can('IsAdded') ? ( $cf->IsAdded(0) || $cf->IsAdded($obj->Queue) ) : ( $cf->IsApplied(0) || $cf->IsApplied($obj->Queue) ));
 
         my $tabs = PageMenu();
 
