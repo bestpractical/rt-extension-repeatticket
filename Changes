@@ -1,5 +1,9 @@
 Revision history for RT-Extension-RepeatTicket
 
+1.10 2015-05-11
+
+ - allow to disable Repeat Ticket for some queues
+
 1.00 2014-12-16
  - Add a missing WebPath to Original Ticket link
  - Improve display on RT 4.2
