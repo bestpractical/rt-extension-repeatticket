@@ -966,6 +966,11 @@ day of the week).
 
 =back
 
+=item I want to enable the repeat function only on some queues
+
+To do this, insetad of applying the "Original Ticket" custom field globally,
+you can apply it to the chosen queues and that's it.
+
 =back
 
 =head1 METHODS
