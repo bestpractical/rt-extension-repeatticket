@@ -971,6 +971,11 @@ day of the week).
 To do this, insetad of applying the "Original Ticket" custom field globally,
 you can apply it to the chosen queues and that's it.
 
+=item some users can't see or use this feature successfully.
+
+Make sure those users have "SeeCustomField" and "ModifyCusotmField" rights
+granted for "Original Ticket" custom field.
+
 =back
 
 =head1 METHODS
