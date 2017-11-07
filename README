@@ -161,6 +161,10 @@ FAQ
         To do this, insetad of applying the "Original Ticket" custom field
         globally, you can apply it to the chosen queues and that's it.
 
+    some users can't see or use this feature successfully.
+        Make sure those users have "SeeCustomField" and "ModifyCusotmField"
+        rights granted for "Original Ticket" custom field.
+
 METHODS
   Run( RT::Attribute $attr, DateTime $checkday )
     Repeat the ticket if $checkday meets the repeat settings. It also tries
