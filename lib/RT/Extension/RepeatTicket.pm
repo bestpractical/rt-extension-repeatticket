@@ -782,6 +782,10 @@ New tickets are created when you initially save the recurrence, if new
 tickets are needed, and when your daily cron job runs the rt-repeat-ticket
 script.
 
+=head1 RT VERSION
+
+Works with RT 5.0. Check out 1.* versions if you are still using RT 4.
+
 =head1 INSTALLATION
 
 =over
@@ -804,21 +808,15 @@ in your database.
 If you are upgrading this module, check for upgrading instructions
 in case changes need to be made to your database.
 
-=item Edit your F</opt/rt4/etc/RT_SiteConfig.pm>
+=item Edit your F</opt/rt5/etc/RT_SiteConfig.pm>
 
-If you are using RT 4.2 or greater, add this line:
+Add this line:
 
     Plugin('RT::Extension::RepeatTicket');
 
-For RT 4.0, add this line:
-
-    Set(@Plugins, qw(RT::Extension::RepeatTicket));
-
-or add C<RT::Extension::RepeatTicket> to your existing C<@Plugins> line.
-
 =item Clear your mason cache
 
-    rm -rf /opt/rt4/var/mason_data/obj
+    rm -rf /opt/rt5/var/mason_data/obj
 
 =item Add F<bin/rt-repeat-ticket> to the daily cron job.
 

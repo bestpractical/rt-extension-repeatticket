@@ -24,9 +24,9 @@ no_index:
     - xt
 requires:
   DateTime::Event::ICal: 0
-  perl: 5.8.3
+  perl: 5.10.1
 resources:
   license: http://opensource.org/licenses/gpl-license.php
 version: '2.00'
 x_module_install_rtx_version: '0.39'
-x_requires_rt: 4.0.6
+x_requires_rt: 5.0.0
