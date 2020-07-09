@@ -4,12 +4,17 @@
 <& /Elements/ListActions, actions => \@results &>
 
 % unless ( $skip ) {
-<form method="post" name="ModifyRecurrence" action="ModifyRecurrence.html">
+<form method="post" name="ModifyRecurrence" action="ModifyRecurrence.html" class="mx-auto max-width-lg">
 <input type="hidden" class="hidden" name="id" value="<%$TicketObj->Id%>" />
 <&| /Widgets/TitleBox,title => loc('Modify recurrence for ticket # [_1]', $TicketObj->Id), class=> 'ticket-info-repeat' &>
 <& Elements/EditRecurrence, Ticket => $TicketObj, ARGSRef => $ARGSRef &>
 </&>
-<& /Elements/Submit, Name => 'SubmitTicket', Label => loc('Save Changes') &>
+
+  <div class="form-row">
+    <div class="col-12">
+      <& /Elements/Submit, Name => 'SubmitTicket', Label => loc('Save Changes') &>
+    </div>
+  </div>
 </form>
 % }
 
