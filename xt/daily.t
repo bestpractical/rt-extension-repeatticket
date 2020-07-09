@@ -112,5 +112,4 @@ sub run_tests{
     return $daily_id;
 }
 
-undef $m;
 done_testing;

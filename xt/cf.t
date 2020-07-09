@@ -70,5 +70,4 @@ ok( RT::Extension::RepeatTicket::SetRepeatAttribute(
 is( $ticket->FirstCustomFieldValue('Original Ticket'),
     undef, 'Original Ticket is unset' );
 
-undef $m;
 done_testing;
