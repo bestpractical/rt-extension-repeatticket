@@ -17,11 +17,11 @@ jQuery( function () {
     } );
 
 % if ( $ReadOnly ) {
-    jQuery('div.repeat input, div.repeat select').attr('disabled', true);
+    jQuery('div.repeat.read-only input, div.repeat.read-only select').attr('disabled', true);
 % }
 } );
 </script>
-<div class="repeat">
+<div class="repeat <% $ReadOnly ? 'read-only' : '' %>">
 
   <div class="form-row">
     <div class="label col-4"></div>
