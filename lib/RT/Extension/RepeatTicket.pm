@@ -808,6 +808,12 @@ in your database.
 If you are upgrading this module, check for upgrading instructions
 in case changes need to be made to your database.
 
+=item C<patch RT>
+
+Apply for 5.0.0:
+
+    patch -p1 -d /opt/rt5 < patches/0001-Fix-radio-checkbox-inputs-for-click-panel-behavior-o.patch
+
 =item Edit your F</opt/rt5/etc/RT_SiteConfig.pm>
 
 Add this line:
