@@ -27,9 +27,14 @@ unless( $cf->id && ( $cf->can('IsAdded') ? ( $cf->IsAdded(0) || $cf->IsAdded($Ti
 }
 
 if ( $ARGS{SubmitTicket} ) {
-    my ( $ret, $message ) = RT::Extension::RepeatTicket::SetRepeatAttribute( $TicketObj, %ARGS );
-    $ARGSRef = \%ARGS if not $ret; # Save params on failure
-    push @results, $message;
+    if ( $TicketObj->CurrentUserHasRight('ModifyTicket') ) {
+        my ( $ret, $message ) = RT::Extension::RepeatTicket::SetRepeatAttribute( $TicketObj, %ARGS );
+        $ARGSRef = \%ARGS if not $ret; # Save params on failure
+        push @results, $message;
+    }
+    else {
+        push @results, loc('Permission Denied');
+    }
 }
 
 </%INIT>
