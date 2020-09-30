@@ -24,11 +24,15 @@ jQuery( function () {
 <div class="repeat <% $ReadOnly ? 'read-only' : '' %>">
 
   <div class="form-row">
-    <div class="label col-4"></div>
+    <div class="label input col-4">
+      <&|/l&>Enable Recurrence:</&>
+    </div>
     <div class="value col-8">
-      <div class="custom-control custom-checkbox">
-        <input type="checkbox" id="<% $InputIdPrefix %>repeat-enabled" name="repeat-enabled" class="custom-control-input" value="1" <% $ARGSRef->{'repeat-enabled'} ? ' checked="checked"': '' |n %>>
-        <label class="custom-control-label" for="<% $InputIdPrefix %>repeat-enabled"><&|/l&>Enable Recurrence?</&></label>
+      <div class="form-check pl-0">
+        <div class="custom-control custom-checkbox">
+          <input type="checkbox" id="<% $InputIdPrefix %>repeat-enabled" name="repeat-enabled" class="custom-control-input" value="1" <% $ARGSRef->{'repeat-enabled'} ? ' checked="checked"': '' |n %>>
+          <label for="<% $InputIdPrefix %>repeat-enabled" class="custom-control-label"></label>
+        </div>
       </div>
     </div>
   </div>
