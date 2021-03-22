@@ -49,6 +49,10 @@ sub SetRepeatAttribute {
         %args
     );
 
+    # Drop unrelated params from inline edit, UpdateContent is from core,
+    # SubmitRecurrence is the submit button.
+    delete $repeat_args{$_} for qw/UpdateContent SubmitRecurrence/;
+
     my ($valid, $message) = ValidateArgs(\%repeat_args);
 
     if ( not $valid ){
