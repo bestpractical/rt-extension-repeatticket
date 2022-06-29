@@ -1,0 +1,264 @@
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2022-06-29 15:23+0200\n"
+"Last-Translator: Emmanuel Lacour <elacour@easter-eggs.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"X-Generator: Poedit 2.4.2\n"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "April"
+msgstr "Avril"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "August"
+msgstr "Août"
+
+#: html/Callbacks/RepeatTicket/Ticket/Elements/ShowSummary/LeftColumn:36
+msgid "Cancel"
+msgstr "Annuler"
+
+#: html/Ticket/Elements/EditRecurrence:53
+msgid "Concurrent active tickets"
+msgstr "Tickets actifs en simultané"
+
+#. ($input->("repeat-details-daily-complete"))
+#: html/Ticket/Elements/EditRecurrence:109
+msgid "Create new task %1 day(s) after each task is completed"
+msgstr "Créer une nouvelle tâche %1 jour(s) après la fin de chaque tâche"
+
+#. ($input->("repeat-details-monthly-complete"))
+#: html/Ticket/Elements/EditRecurrence:159
+msgid "Create new task %1 month(s) after each task is completed"
+msgstr "Créer une nouvelle tâche %1 mois après la fin de chaque tâche"
+
+#. ($input->("repeat-details-weekly-complete"))
+#: html/Ticket/Elements/EditRecurrence:140
+msgid "Create new task %1 week(s) after each task is completed"
+msgstr "Créer une nouvelle tâche %1 semaine(s) après la fin de chaque tâche"
+
+#. ($input->("repeat-details-yearly-complete"))
+#: html/Ticket/Elements/EditRecurrence:178
+msgid "Create new task %1 year(s) after each task is completed"
+msgstr "Créer une nouvelle tâche %1 année(s) après la fin de chaque tâche"
+
+#: html/Ticket/Elements/EditRecurrence:212
+msgid "Current"
+msgstr "En cours"
+
+#: html/Ticket/Elements/EditRecurrence:69
+msgid "Daily"
+msgstr "Quotidien"
+
+#. ($input->("repeat-details-monthly-day-day"), $input->("repeat-details-monthly-day-month"))
+#: html/Ticket/Elements/EditRecurrence:149
+msgid "Day %1 of every %2 month(s)"
+msgstr "Jour %1 tous les %2 mois"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "December"
+msgstr "Décembre"
+
+#: html/Callbacks/RepeatTicket/Ticket/Elements/ShowSummary/LeftColumn:35
+msgid "Edit"
+msgstr "Modifier"
+
+#: html/Ticket/Elements/EditRecurrence:28
+msgid "Enable Recurrence:"
+msgstr "Activer la récurrence:"
+
+#. ($input->("repeat-end-number",6,10))
+#: html/Ticket/Elements/EditRecurrence:208
+msgid "End after %1 occurrence(s)"
+msgstr "Terminer après %1 occurence(s)"
+
+#: html/Ticket/Elements/EditRecurrence:220
+msgid "End by"
+msgstr "Se termine le"
+
+#: html/Ticket/Elements/EditRecurrence:197
+msgid "End of recurrence"
+msgstr "Fin de la récurrence"
+
+#. ($month->("repeat-details-yearly-day-month"), $input->("repeat-details-yearly-day-day"))
+#: html/Ticket/Elements/EditRecurrence:168
+msgid "Every %1 %2"
+msgstr "Tous les %2 %1"
+
+#. ($input->("repeat-details-daily-day"))
+#: html/Ticket/Elements/EditRecurrence:99
+msgid "Every %1 Day(s)"
+msgstr "Tous les %1 jour(s)"
+
+#: html/Ticket/Elements/EditRecurrence:104
+msgid "Every Weekday"
+msgstr "Tous les jours de la semaine"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "February"
+msgstr "Février"
+
+#: html/Ticket/Elements/EditRecurrence:232
+msgid "First"
+msgstr "Premier"
+
+#: html/Ticket/Elements/EditRecurrence:232
+msgid "Fourth"
+msgstr "Quatrième"
+
+#: html/Ticket/Elements/EditRecurrence:230
+msgid "Fri"
+msgstr "Ven"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "January"
+msgstr "Janvier"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "July"
+msgstr "Juillet"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "June"
+msgstr "Juin"
+
+#: html/Ticket/Elements/EditRecurrence:232
+msgid "Last"
+msgstr "Dernier"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "March"
+msgstr "Mars"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "May"
+msgstr "Mai"
+
+#. ($TicketObj->Id)
+#: html/Ticket/ModifyRecurrence.html:1
+msgid "Modify recurrence for #%1"
+msgstr "Modifier la récurrence pour n°%1"
+
+#. ($TicketObj->Id)
+#: html/Ticket/ModifyRecurrence.html:9
+msgid "Modify recurrence for ticket # %1"
+msgstr "Modifier la récurrence pour le ticket n° %1"
+
+#: html/Ticket/Elements/EditRecurrence:230
+msgid "Mon"
+msgstr "Lun"
+
+#: html/Ticket/Elements/EditRecurrence:83
+msgid "Monthly"
+msgstr "Mensuel"
+
+#: html/Ticket/Elements/EditRecurrence:203
+msgid "No end date"
+msgstr "Pas de date de fin"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "November"
+msgstr "Novembre"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "October"
+msgstr "Octobre"
+
+#: html/Callbacks/RepeatTicket/Ticket/Display.html/BeforeDisplay:12
+#: html/Ticket/ModifyRecurrence.html:41
+msgid "Permission Denied"
+msgstr "Permission refusée"
+
+#. ($input->("repeat-details-weekly-week"))
+#: html/Ticket/Elements/EditRecurrence:117
+msgid "Recur every %1 week(s) on"
+msgstr "Répéter toutes les %1 semaine(s) le"
+
+#: html/Callbacks/RepeatTicket/Elements/Tabs/Privileged:26
+#: html/Callbacks/RepeatTicket/Ticket/Create.html/AfterBasics:1
+#: html/Callbacks/RepeatTicket/Ticket/Elements/ShowSummary/LeftColumn:1
+msgid "Recurrence"
+msgstr "Récurrence"
+
+#: html/Ticket/Elements/EditRecurrence:62
+msgid "Recurrence pattern"
+msgstr "Mode de récurrence"
+
+#: lib/RT/Extension/RepeatTicket.pm:90
+msgid "Recurrence updated"
+msgstr "Récurrence mise à jour"
+
+#: html/Ticket/ModifyRecurrence.html:30
+msgid "RepeatTicket is not enabled in this Queue"
+msgstr "La récurrence n'est pas disponible pour cette file"
+
+#: html/Ticket/Elements/EditRecurrence:230
+msgid "Sat"
+msgstr "Sam"
+
+#: html/Callbacks/RepeatTicket/Ticket/Elements/ShowSummary/LeftColumn:19
+msgid "Save"
+msgstr "Sauvegarder"
+
+#: html/Ticket/ModifyRecurrence.html:15
+msgid "Save Changes"
+msgstr "Sauvegarder"
+
+#: html/Ticket/Elements/EditRecurrence:232
+msgid "Second"
+msgstr "Deuxième"
+
+#: html/Ticket/Elements/EditRecurrence:233
+msgid "September"
+msgstr "Septembre"
+
+#: html/Ticket/Elements/EditRecurrence:188
+msgid "Start of recurrence"
+msgstr "Début de la récurrence"
+
+#: html/Ticket/Elements/EditRecurrence:230
+msgid "Sun"
+msgstr "Dim"
+
+#. ($nth->("repeat-details-yearly-week-number"), $wday->("repeat-details-yearly-week-week"), $month->("repeat-details-yearly-week-month"))
+#: html/Ticket/Elements/EditRecurrence:173
+msgid "The %1 %2 of %3"
+msgstr "Le %1 %2 de %3"
+
+#. ($nth->("repeat-details-monthly-week-number"), $wday->("repeat-details-monthly-week-week"), $input->("repeat-details-monthly-week-month"))
+#: html/Ticket/Elements/EditRecurrence:154
+msgid "The %1 %2 of every %3 month(s)"
+msgstr "Le %1 %2 tous les %3 mois"
+
+#: html/Ticket/Elements/EditRecurrence:232
+msgid "Third"
+msgstr "Troisième"
+
+#: html/Ticket/Elements/EditRecurrence:230
+msgid "Thu"
+msgstr "Jeu"
+
+#: html/Ticket/Elements/EditRecurrence:44
+msgid "Ticket lead time (days)"
+msgstr "Durée de vie du ticket (jours)"
+
+#: html/Ticket/Elements/EditRecurrence:230
+msgid "Tue"
+msgstr "Mar"
+
+#: html/Ticket/Elements/EditRecurrence:230
+msgid "Wed"
+msgstr "Mer"
+
+#: html/Ticket/Elements/EditRecurrence:76
+msgid "Weekly"
+msgstr "Hebdomadaire"
+
+#: html/Ticket/Elements/EditRecurrence:90
+msgid "Yearly"
+msgstr "Annuel"
