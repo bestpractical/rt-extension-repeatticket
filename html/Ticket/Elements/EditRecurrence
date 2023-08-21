@@ -1,4 +1,4 @@
-<script>
+<script type="text/javascript">
 jQuery( function () {
     jQuery('div.repeat input[name=repeat-enabled]').change( function () {
         var val = jQuery(this).val();
@@ -9,11 +9,29 @@ jQuery( function () {
             jQuery('div.repeat div.repeat-toggle').addClass('hidden');
         }
     } );
- 
+
     jQuery('div.repeat input[name=repeat-type]').change( function () {
         var val = jQuery(this).val();
         jQuery('div.repeat .repeat-details:not(.repeat-details-'+val+')').addClass('hidden');
         jQuery('div.repeat .repeat-details-' +val ).removeClass('hidden');
+    } );
+
+    jQuery('div.repeat input[name=repeat-create-on-recurring-date]').change( function () {
+        var val = jQuery(this).val();
+        if ( val == 0 ) {
+            jQuery('div#repeat-coexistent-number-div').removeClass('hidden');
+            jQuery('svg#lead-time-tooltip-simple').addClass('hidden');
+            jQuery('svg#lead-time-tooltip-concurrent').removeClass('hidden');
+            if ( jQuery('div.repeat input[name=repeat-coexistent-number]').val() == 0 ) {
+              jQuery('div.repeat input[name=repeat-coexistent-number]').val( <% RT->Config->Get('RepeatTicketCoexistentNumber') || 1 %> );
+            }
+        }
+        else {
+            jQuery('div#repeat-coexistent-number-div').addClass('hidden');
+            jQuery('svg#lead-time-tooltip-simple').removeClass('hidden');
+            jQuery('svg#lead-time-tooltip-concurrent').addClass('hidden');
+            jQuery('div.repeat input[name=repeat-coexistent-number]').val(0);
+        }
     } );
 
 % if ( $ReadOnly ) {
@@ -41,19 +59,42 @@ jQuery( function () {
 
     <div class="form-row">
       <div class="label input col-4">
-        <&|/l&>Ticket lead time (days)</&>:
+        <&|/l&>Ticket Create Mode</&>:
       </div>
       <div class="value col-8">
-        <input class="form-control" size="3" name="repeat-lead-time" type="text" value="<% $ARGSRef->{'repeat-lead-time'} %>" />
+        <div class="form-check form-check-inline">
+          <div class="custom-control custom-radio">
+            <input type="radio" id="<% $InputIdPrefix %>repeat-create-on-recurring-date-true" name="repeat-create-on-recurring-date" class="custom-control-input" value="1" <% $ARGSRef->{'repeat-create-on-recurring-date'} ? ' checked="checked"': '' |n %>>
+            <label class="custom-control-label" for="<% $InputIdPrefix %>repeat-create-on-recurring-date-true"><&|/l&>Simple Mode - Ticket created on Recurring Date</&></label>
+          </div>
+        </div>
+
+        <div class="form-check form-check-inline">
+          <div class="custom-control custom-radio">
+            <input type="radio" id="<% $InputIdPrefix %>repeat-create-on-recurring-date-false" name="repeat-create-on-recurring-date" class="custom-control-input" value="0" <% $ARGSRef->{'repeat-create-on-recurring-date'} ? '' : ' checked="checked"' |n %>>
+            <label class="custom-control-label" for="<% $InputIdPrefix %>repeat-create-on-recurring-date-false"><&|/l&>Concurrent Tickets Mode - Ticket due on Recurring Date</&></label>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="form-row">
+    <div id="repeat-coexistent-number-div" class="form-row <% $ARGSRef->{'repeat-create-on-recurring-date'} ? 'hidden' : '' %>">
       <div class="label input col-4">
         <&|/l&>Concurrent active tickets</&>:
       </div>
       <div class="value col-8">
         <input class="form-control" size="3" name="repeat-coexistent-number" type="text" value="<% $ARGSRef->{'repeat-coexistent-number'} %>" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="label input col-4">
+        <&|/l&>Ticket lead time (days)</&>:
+        <span id="lead-time-tooltip-simple" class="far fa-question-circle icon-helper <% $ARGSRef->{'repeat-create-on-recurring-date'} ? '' : 'hidden' %>" data-toggle="tooltip" data-placement="top" data-original-title="<% loc($lead_time_tooltip_simple) %>"></span>
+        <span id="lead-time-tooltip-concurrent" class="far fa-question-circle icon-helper <% $ARGSRef->{'repeat-create-on-recurring-date'} ? 'hidden' : '' %>" data-toggle="tooltip" data-placement="top" data-original-title="<% loc($lead_time_tooltip_concurrent) %>"></span>
+      </div>
+      <div class="value col-8">
+        <input class="form-control" size="3" name="repeat-lead-time" type="text" value="<% $ARGSRef->{'repeat-lead-time'} %>" />
       </div>
     </div>
 
@@ -232,6 +273,9 @@ my @week_values = qw(su mo tu we th fr sa);
 my @week_number_labels = qw(First Second Third Fourth Last); # loc_qw
 my @month_labels = qw(January February March April  May June July August September October November December); # loc_qw
 
+my $lead_time_tooltip_simple     = loc('Ticket will be due this many days after the recurring date.');
+my $lead_time_tooltip_concurrent = loc('Ticket will be created this many days before the recurring date.');
+
 if ( $Ticket ) {
     my ($repeat) = $Ticket->Attributes->Named('RepeatTicketSettings');
     if ( $repeat ) {
@@ -250,10 +294,16 @@ $ARGSRef->{'repeat-details-monthly'} ||= 'day';
 $ARGSRef->{'repeat-details-yearly'} ||= 'day';
 $ARGSRef->{'repeat-end'} ||= 'none';
 $ARGSRef->{'repeat-lead-time'} //= RT->Config->Get('RepeatTicketLeadTime') // 14;
+$ARGSRef->{'repeat-create-on-recurring-date'} //= 1;
 
-# 0 is a valid value, so check for defined before setting to default
-if ( not defined $ARGSRef->{'repeat-coexistent-number'} ){
-    $ARGSRef->{'repeat-coexistent-number'} = RT->Config->Get('RepeatTicketCoexistentNumber') || 1;
+if ( $ARGSRef->{'repeat-create-on-recurring-date'} ) {
+    $ARGSRef->{'repeat-coexistent-number'} = 0;
+}
+else {
+    # 0 is a valid value, so check for defined before setting to default
+    if ( not defined $ARGSRef->{'repeat-coexistent-number'} ){
+        $ARGSRef->{'repeat-coexistent-number'} = RT->Config->Get('RepeatTicketCoexistentNumber') || 1;
+    }
 }
 
 my $input = sub {
