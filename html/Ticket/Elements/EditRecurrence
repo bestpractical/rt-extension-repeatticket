@@ -265,6 +265,35 @@ jQuery( function () {
       </div>
     </div>
   </div>
+
+  <div class="<% $ARGSRef->{'repeat-enabled'} && $ReadOnly && $preview_num ? '' : 'hidden' %>" id="tickets-preview">
+    <&| /Widgets/TitleBox, title => loc("Recurrence Preview") &>
+      <div class="form-row" style="text-align:left;">
+        <p>This shows the next <% $preview_num %> tickets that would be created with the current recurrence configuration.</p>
+
+        <p>If the recurrence configuration uses the concurrent active tickets option or the create new task after task is complete option the preview may not be accurate as it depends on whether previously created tickets are still active.</p>
+      </div>
+      <div class="form-row" style="text-align:center;">
+        <div class="col-6">
+          <span><% loc('Starts') . ( $ARGSRef->{'repeat-create-on-recurring-date'} ? ' - ' . loc('Recurring Date') : '' ) %></span>
+        </div>
+        <div class="col-6">
+          <span><% loc('Due') . ( $ARGSRef->{'repeat-create-on-recurring-date'} ? '' : ' - ' . loc('Recurring Date') ) %></span>
+        </div>
+      </div>
+% foreach my $preview ( @preview_tickets ) {
+      <div class="form-row" style="text-align:center;">
+        <div class="col-6">
+          <span><% $preview->[0] %></span>
+        </div>
+        <div class="col-6">
+          <span><% $preview->[1] %></span>
+        </div>
+      </div>
+% }
+    </&>
+    </div>
+
 </div>
 
 <%init>
@@ -276,8 +305,9 @@ my @month_labels = qw(January February March April  May June July August Septemb
 my $lead_time_tooltip_simple     = loc('Ticket will be due this many days after the recurring date.');
 my $lead_time_tooltip_concurrent = loc('Ticket will be created this many days before the recurring date.');
 
+my $repeat;
 if ( $Ticket ) {
-    my ($repeat) = $Ticket->Attributes->Named('RepeatTicketSettings');
+    ($repeat) = $Ticket->Attributes->Named('RepeatTicketSettings');
     if ( $repeat ) {
         $ARGSRef = $repeat->Content if $repeat;
     }
@@ -300,8 +330,8 @@ if ( $ARGSRef->{'repeat-create-on-recurring-date'} ) {
     $ARGSRef->{'repeat-coexistent-number'} = 0;
 }
 else {
-    # 0 is a valid value, so check for defined before setting to default
-    if ( not defined $ARGSRef->{'repeat-coexistent-number'} ){
+    # 0 is not a valid value for concurrent tickets mode
+    if ( not $ARGSRef->{'repeat-coexistent-number'} ){
         $ARGSRef->{'repeat-coexistent-number'} = RT->Config->Get('RepeatTicketCoexistentNumber') || 1;
     }
 }
@@ -354,6 +384,70 @@ my $month = sub {
     $str .= "</select>";
     return $str;
 };
+
+my @preview_tickets;
+my $preview_num = RT->Config->Get('RepeatTicketPreviewNumber') // 5;
+unless ( $Initial ) {
+  # find next X tickets to be created for preview window
+    if ( $preview_num ) {
+        RT::Extension::RepeatTicket::RepeatTicketPreview(1);
+
+        my $content = $repeat->Content;
+
+        my ( $last_due, $last_created );
+        if ( $content->{'last-ticket'} ) {
+            my $last_ticket = RT::Ticket->new( RT->SystemUser );
+            $last_ticket->Load( $content->{'last-ticket'} );
+
+            if ( $last_ticket->DueObj->Unix ) {
+                $last_due = DateTime->from_epoch(
+                    epoch     => $last_ticket->DueObj->Unix,
+                    time_zone => RT->Config->Get('Timezone'),
+                );
+                $last_due->truncate( to => 'day' );
+            }
+
+            $last_created = DateTime->from_epoch(
+                epoch     => $last_ticket->CreatedObj->Unix,
+                time_zone => RT->Config->Get('Timezone'),
+            );
+            $last_created->truncate( to => 'day' );
+        }
+        my $today = DateTime->today( time_zone => RT->Config->Get('Timezone') );
+        $today->truncate( to => 'day' );
+
+        my $start_set_date;
+        if ( $content->{'repeat-create-on-recurring-date'} ) {
+            $start_set_date = $last_created || $today;
+        }
+        else {
+            $start_set_date = $last_due || $last_created || $today;
+        }
+
+        my $set = RT::Extension::RepeatTicket::BuildSet( $content, $start_set_date );
+        if ($set) {
+            # use a counter to ensure we don't get an endless loop trying to find the next X tickets
+            my $counter = 0;
+            my $iter = $set->iterator;
+            while ( my $dt = $iter->next ) {
+                if ( !$content->{'repeat-create-on-recurring-date'} && $content->{'repeat-lead-time'} ) {
+                    # the date to pass to Repeat must be the start/create date which in concurrent mode is lead time days in the past
+                    $dt->add( days => -1 * $content->{'repeat-lead-time'} );
+                }
+
+                # skip dates in the past
+                next if $dt->epoch < $today->epoch;
+
+                push @preview_tickets, RT::Extension::RepeatTicket::Repeat( $repeat, $dt );
+                $counter++;
+
+                last if scalar @preview_tickets >= $preview_num || $counter > $preview_num * 2;
+            }
+        }
+
+        RT::Extension::RepeatTicket::RepeatTicketPreview(0);
+    }
+}
 </%init>
 <%args>
 $ARGSRef => undef

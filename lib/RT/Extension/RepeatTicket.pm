@@ -163,6 +163,16 @@ sub Run {
     return @ids;
 }
 
+my $repeat_ticket_preview = 0;
+sub RepeatTicketPreview {
+    my $val = shift;
+
+    $repeat_ticket_preview = $val
+        if defined $val;
+
+    return $repeat_ticket_preview;
+}
+
 sub Repeat {
     my $attr      = shift;
     my @checkdays = @_;
@@ -175,7 +185,9 @@ sub Repeat {
 
     my $tickets_needed = TicketsToMeetCoexistentNumber($attr);
 
-    return unless $tickets_needed || $content->{'repeat-create-on-recurring-date'};
+    return unless $tickets_needed
+        || $content->{'repeat-create-on-recurring-date'}
+        || RepeatTicketPreview;
 
     for my $checkday (@checkdays) {
         # Adjust by lead time
@@ -446,31 +458,38 @@ sub Repeat {
             }
         }
 
-        my ( $id, $txn, $msg ) = _RepeatTicket(
-            $repeat_ticket,
-            Starts => $starts->ISO,
-            $due
-            ? ( Due => $due->ISO )
-            : (),
-        );
-
-        if ($id) {
-            $RT::Logger->info(
-                "Repeated ticket " . $repeat_ticket->id . ": $id" );
-            $content->{'repeat-occurrences'}++;
-            $content->{'last-ticket'} = $id;
-            push @{ $content->{'tickets'} }, $id;
-            push @ids, $id;
+        if ( RepeatTicketPreview ) {
+            # return the ticket starts and due date
+            push @ids, [ $starts->Date, $due ? $due->Date : () ];
         }
         else {
-            $RT::Logger->error( "Failed to repeat ticket for "
-                  . $repeat_ticket->id
-                  . ": $msg" );
-            next;
+            my ( $id, $txn, $msg ) = _RepeatTicket(
+                $repeat_ticket,
+                Starts => $starts->ISO,
+                $due
+                ? ( Due => $due->ISO )
+                : (),
+            );
+
+            if ($id) {
+                $RT::Logger->info(
+                    "Repeated ticket " . $repeat_ticket->id . ": $id" );
+                $content->{'repeat-occurrences'}++;
+                $content->{'last-ticket'} = $id;
+                push @{ $content->{'tickets'} }, $id;
+                push @ids, $id;
+            }
+            else {
+                $RT::Logger->error( "Failed to repeat ticket for "
+                    . $repeat_ticket->id
+                    . ": $msg" );
+                next;
+            }
         }
     }
 
-    $attr->SetContent($content);
+    $attr->SetContent($content)
+        unless RepeatTicketPreview;
     return @ids;
 }
 
@@ -653,7 +672,8 @@ sub MaybeRepeatMore {
     $last_created->truncate( to => 'day' );
 
     $content->{tickets} = GetActiveTickets($content);
-    $attr->SetContent($content);
+    $attr->SetContent($content)
+        unless RepeatTicketPreview;
 
     my @ids;
     if ( $tickets_needed ) {
