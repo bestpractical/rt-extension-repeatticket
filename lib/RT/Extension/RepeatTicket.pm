@@ -991,6 +991,13 @@ C<$RepeatTicketPreviewNumber> option:
 
 Set the C<$RepeatTicketPreviewNumber> option to 0 to hide the Recurrence Preview.
 
+=head2 C<@RepeatTicketSkipCustomFields>
+
+By default, all custom fields' values are carried over to the new ticket. Use this
+configurable to skip some custom fields from being copied to the new ticket:
+
+    Set(@RepeatTicketSkipCustomFields, ('My Custom Field', 'Another Custom Field'));
+
 =head2 rt-repeat-ticket
 
 The rt-repeat-ticket utility evaluates all of your repeating tickets and creates
