@@ -574,8 +574,10 @@ sub _RepeatTicket {
     $repeat->{ReferredToBy} = $repeat->{'RefersTo-new'} = join ' ', @refers_by;
 
     my $cfs = $repeat_ticket->QueueObj->TicketCustomFields();
+    my @skip_custom_fields = @{ RT->Config->Get('RepeatTicketSkipCustomFields') || [] };
     while ( my $cf = $cfs->Next ) {
         next if $cf->Name eq 'Original Ticket';
+        next if grep { $cf->Name eq $_ } @skip_custom_fields;
         my $cf_id     = $cf->id;
         my $cf_values = $repeat_ticket->CustomFieldValues( $cf->id );
         my @cf_values;
