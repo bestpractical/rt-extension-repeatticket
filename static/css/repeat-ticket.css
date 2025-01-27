@@ -2,8 +2,9 @@
   border-top: 3px solid #B23;
 }
 
-.repeat .form-row .form-check {
-  margin-top: 5px;
+.repeat .row .form-check {
+  padding-left: 0px;
+  margin-bottom: 0px;
 }
 
 .repeat .custom-control-label.has-text-input::before,
@@ -12,7 +13,7 @@
 }
 
 .repeat .form-control {
-  display: inline;
+  display: inline-block;
   width: auto;
 }
 
@@ -22,4 +23,14 @@
 
 .z-index-auto {
   z-index: auto;
+}
+
+.repeat input[type="radio"],
+.repeat input[type="checkbox"] {
+  vertical-align: text-top;
+  margin-top: 1px;
+}
+
+.repeat .ts-control {
+  width: fit-content !important;
 }

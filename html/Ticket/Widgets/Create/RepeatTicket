@@ -2,10 +2,12 @@
 <& /Ticket/Elements/EditRecurrence, ARGSRef => $ARGSRef, Initial => 1 &>
 </&>
 <%init>
+$ARGSRef->{TicketObj} = $Ticket if $Ticket;
 my $cf = RT::CustomField->new($session{CurrentUser});
 $cf->Load('Original Ticket');
 return unless $cf->id && ( $cf->can('IsAdded') ? ( $cf->IsAdded(0) || $cf->IsAdded($ARGS{QueueObj}->id) ) : ( $cf->IsApplied(0) || $cf->IsApplied($ARGS{QueueObj}->id) ));
 </%init>
 <%args>
-$ARGSRef
+$ARGSRef => undef
+$Ticket => undef
 </%args>

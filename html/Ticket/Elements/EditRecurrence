@@ -41,11 +41,11 @@ jQuery( function () {
 </script>
 <div class="repeat <% $ReadOnly ? 'read-only' : '' %>">
 
-  <div class="form-row">
-    <div class="label input col-4">
+  <div class="row">
+    <div class="label input col-4 text-end">
       <&|/l&>Enable Recurrence:</&>
     </div>
-    <div class="value col-8">
+    <div class="value col-8 pt-2">
       <div class="form-check pl-0">
         <div class="custom-control custom-checkbox">
           <input type="checkbox" id="<% $InputIdPrefix %>repeat-enabled" name="repeat-enabled" class="custom-control-input" value="1" <% $ARGSRef->{'repeat-enabled'} ? ' checked="checked"': '' |n %>>
@@ -57,11 +57,11 @@ jQuery( function () {
 
   <div class="repeat-toggle <% $ARGSRef->{'repeat-enabled'} ? '' : 'hidden' %> ">
 
-    <div class="form-row">
-      <div class="label input col-4">
+    <div class="row">
+      <div class="label input col-4 text-end">
         <&|/l&>Ticket Create Mode</&>:
       </div>
-      <div class="value col-8">
+      <div class="value col-8 pt-2">
         <div class="form-check form-check-inline">
           <div class="custom-control custom-radio">
             <input type="radio" id="<% $InputIdPrefix %>repeat-create-on-recurring-date-true" name="repeat-create-on-recurring-date" class="custom-control-input" value="1" <% $ARGSRef->{'repeat-create-on-recurring-date'} ? ' checked="checked"': '' |n %>>
@@ -78,17 +78,17 @@ jQuery( function () {
       </div>
     </div>
 
-    <div id="repeat-coexistent-number-div" class="form-row <% $ARGSRef->{'repeat-create-on-recurring-date'} ? 'hidden' : '' %>">
-      <div class="label input col-4">
+    <div id="repeat-coexistent-number-div" class="row <% $ARGSRef->{'repeat-create-on-recurring-date'} ? 'hidden' : '' %>">
+      <div class="label input col-4 text-end">
         <&|/l&>Concurrent active tickets</&>:
       </div>
-      <div class="value col-8">
+      <div class="value col-8 pt-2">
         <input class="form-control" size="3" name="repeat-coexistent-number" type="text" value="<% $ARGSRef->{'repeat-coexistent-number'} %>" />
       </div>
     </div>
 
-    <div class="form-row">
-      <div class="label input col-4">
+    <div class="row">
+      <div class="label input col-4 text-end">
         <&|/l&>Ticket lead time (days)</&>:
         <span id="lead-time-tooltip-simple" class="far fa-question-circle icon-helper <% $ARGSRef->{'repeat-create-on-recurring-date'} ? '' : 'hidden' %>" data-toggle="tooltip" data-placement="top" data-original-title="<% loc($lead_time_tooltip_simple) %>"></span>
         <span id="lead-time-tooltip-concurrent" class="far fa-question-circle icon-helper <% $ARGSRef->{'repeat-create-on-recurring-date'} ? 'hidden' : '' %>" data-toggle="tooltip" data-placement="top" data-original-title="<% loc($lead_time_tooltip_concurrent) %>"></span>
@@ -98,11 +98,11 @@ jQuery( function () {
       </div>
     </div>
 
-    <div class="form-row">
-      <div class="label input col-4">
+    <div class="row">
+      <div class="label input col-4 text-end">
         <&|/l&>Recurrence pattern</&>:
       </div>
-      <div class="value col-8">
+      <div class="value col-8 pt-2">
 
         <div class="form-check form-check-inline">
           <div class="custom-control custom-radio">
@@ -224,8 +224,8 @@ jQuery( function () {
       </div>
     </div>
 
-    <div class="form-row mt-2">
-      <div class="label input col-4">
+    <div class="row mt-2">
+      <div class="label input col-4 text-end">
         <&|/l&>Start of recurrence</&>:
       </div>
       <div class="value col-8">
@@ -233,11 +233,11 @@ jQuery( function () {
       </div>
     </div>
 
-    <div class="form-row">
-      <div class="label input col-4">
+    <div class="row">
+      <div class="label input col-4 text-end">
         <&|/l&>End of recurrence</&>:
       </div>
-      <div class="value col-8 form-check">
+      <div class="value col-8 pt-2 form-check">
 
         <div class="custom-control custom-radio">
           <input type="radio" id="<% $InputIdPrefix %>repeat-end-none" name="repeat-end" class="custom-control-input" value="none" <% ($ARGSRef->{'repeat-end'} || '') eq 'none' ? ' checked="checked"': '' |n %>>
@@ -268,12 +268,12 @@ jQuery( function () {
 
   <div class="<% $ARGSRef->{'repeat-enabled'} && $ReadOnly && $preview_num ? '' : 'hidden' %>" id="tickets-preview">
     <&| /Widgets/TitleBox, title => loc("Recurrence Preview") &>
-      <div class="form-row" style="text-align:left;">
+      <div class="row" style="text-align:left;">
         <p>This shows the next <% $preview_num %> tickets that would be created with the current recurrence configuration.</p>
 
         <p>If the recurrence configuration uses the concurrent active tickets option or the create new task after task is complete option the preview may not be accurate as it depends on whether previously created tickets are still active.</p>
       </div>
-      <div class="form-row" style="text-align:center;">
+      <div class="row" style="text-align:center;">
         <div class="col-6">
           <span><% loc('Starts') . ( $ARGSRef->{'repeat-create-on-recurring-date'} ? ' - ' . loc('Recurring Date') : '' ) %></span>
         </div>
@@ -282,7 +282,7 @@ jQuery( function () {
         </div>
       </div>
 % foreach my $preview ( @preview_tickets ) {
-      <div class="form-row" style="text-align:center;">
+      <div class="row" style="text-align:center;">
         <div class="col-6">
           <span><% $preview->[0] %></span>
         </div>
