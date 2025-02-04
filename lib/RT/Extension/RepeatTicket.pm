@@ -843,7 +843,7 @@ script.
 
 =head1 RT VERSION
 
-Works with RT 5.0. Check out 1.* versions if you are still using RT 4.
+Works with RT 6.0
 
 =head1 INSTALLATION
 
@@ -867,13 +867,7 @@ in your database.
 If you are upgrading this module, check for upgrading instructions
 in case changes need to be made to your database.
 
-=item C<patch RT>
-
-Apply for 5.0.0:
-
-    patch -p1 -d /opt/rt5 < patches/0001-Fix-radio-checkbox-inputs-for-click-panel-behavior-o.patch
-
-=item Edit your F</opt/rt5/etc/RT_SiteConfig.pm>
+=item Edit your F</opt/rt6/etc/RT_SiteConfig.pm>
 
 Add this line:
 
@@ -881,7 +875,7 @@ Add this line:
 
 =item Clear your mason cache
 
-    rm -rf /opt/rt5/var/mason_data/obj
+    rm -rf /opt/rt6/var/mason_data/obj
 
 =item Add F<bin/rt-repeat-ticket> to the daily cron job.
 
@@ -1153,7 +1147,7 @@ or via the web at
 
 =head1 LICENSE AND COPYRIGHT
 
-This software is Copyright (c) 2014-2020 by Best Practical Solutions
+This software is Copyright (c) 2014-2025 by Best Practical Solutions
 
 This is free software, licensed under:
 
