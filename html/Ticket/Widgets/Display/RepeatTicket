@@ -5,15 +5,17 @@
    data => { 'inline-edit-behavior' => $modify_behavior },
 &>
 % unless ($modify_behavior eq 'always') {
-  <div class="inline-edit-display">
+  <div class="inline-edit-display" hx-trigger="ticketRecurrenceChanged from:body" hx-get="<% RT->Config->Get('WebPath') %>/Views/Ticket/EditRecurrence?id=<% $TicketObj->id %>&ReadOnly=1">
     <& /Ticket/Elements/EditRecurrence, Ticket => $TicketObj, ReadOnly => 1 &>
   </div>
 % }
 
 % if ($modify_behavior ne 'hide') {
-  <form class="inline-edit" hx-post="<%RT->Config->Get('WebPath')%>/Ticket/Display.html">
+  <form hx-post="<% RT->Config->Get('WebPath') %>/Helpers/TicketUpdateRecurrence" hx-swap="none" class="inline-edit">
     <input type="hidden" class="hidden" name="id" value="<% $TicketObj->id %>" />
-    <& /Ticket/Elements/EditRecurrence, Ticket => $TicketObj, InputIdPrefix => 'inline-edit-' &>
+    <div hx-trigger="ticketRecurrenceChanged from:body" hx-get="<% RT->Config->Get('WebPath') %>/Views/Ticket/EditRecurrence?id=<% $TicketObj->id %>&InputIdPrefix=inline-edit-" hx-swap="innerHTML">
+      <& /Ticket/Elements/EditRecurrence, Ticket => $TicketObj, InputIdPrefix => 'inline-edit-' &>
+    </div>
     <& /Elements/Submit, Name => "SubmitRecurrence", Label => loc('Save'), FullWidth => 1 &>
   </form>
 % }
