@@ -396,3 +396,7 @@ $ReadOnly => undef
 $Initial => undef
 $InputIdPrefix => ''
 </%args>
+
+<%attr>
+directly_accessible => 1
+</%attr>
