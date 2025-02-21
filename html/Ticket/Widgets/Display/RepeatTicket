@@ -1,36 +1,32 @@
 <&| /Widgets/TitleBox, title => loc("Recurrence"), class=>'ticket-info-repeat-recurrence',
    ($can_modify ? (title_href => $modify_url) : ()),
-   ($can_modify && $modify_behavior =~ /^(link|click)$/ ?  (titleright_raw => $modify_basics) : ()),
+   ($can_modify && $modify_behavior =~ /^(link|click)$/ ?  (titleright_raw => $m->scomp('/Elements/InlineEditLink')) : ()),
    class => (join " ", 'ticket-info-repeat-recurrence', ($modify_behavior eq 'always' ? 'editing' : ())),
    data => { 'inline-edit-behavior' => $modify_behavior },
 &>
 % unless ($modify_behavior eq 'always') {
   <div class="inline-edit-display">
-    <& /Ticket/Elements/EditRecurrence, Ticket => $Ticket, ReadOnly => 1 &>
+    <& /Ticket/Elements/EditRecurrence, Ticket => $TicketObj, ReadOnly => 1 &>
   </div>
 % }
 
 % if ($modify_behavior ne 'hide') {
-  <form class="inline-edit" action="<%RT->Config->Get('WebPath')%>/Ticket/Display.html" method="post">
-    <input type="hidden" class="hidden" name="id" value="<% $Ticket->id %>" />
-    <& /Ticket/Elements/EditRecurrence, Ticket => $Ticket, InputIdPrefix => 'inline-edit-' &>
-    <div class="form-row">
-      <div class="col-12 text-right">
-        <input type="submit" class="button btn btn-primary" name="SubmitRecurrence" value="<&|/l&>Save</&>" />
-      </div>
-    </div>
+  <form class="inline-edit" hx-post="<%RT->Config->Get('WebPath')%>/Ticket/Display.html">
+    <input type="hidden" class="hidden" name="id" value="<% $TicketObj->id %>" />
+    <& /Ticket/Elements/EditRecurrence, Ticket => $TicketObj, InputIdPrefix => 'inline-edit-' &>
+    <& /Elements/Submit, Name => "SubmitRecurrence", Label => loc('Save'), FullWidth => 1 &>
   </form>
 % }
 </&>
 <%args>
-$Ticket
-$InlineEdit => 0
+$TicketObj
 </%args>
 <%init>
-my $can_modify = $Ticket->CurrentUserHasRight('ModifyTicket');
+my $can_modify = $TicketObj->CurrentUserHasRight('ModifyTicket');
 my $cf = RT::CustomField->new($session{CurrentUser});
 $cf->Load('Original Ticket');
-return unless $cf->id && ( $cf->can('IsAdded') ? ( $cf->IsAdded(0) || $cf->IsAdded($Ticket->Queue) ) : ( $cf->IsApplied(0) || $cf->IsApplied($Ticket->Queue)) );
+
+return unless $cf->id && ( $cf->IsAdded(0) || $cf->IsAdded($TicketObj->Queue) );
 
 my $edit_label = $m->interp->apply_escapes( loc("Edit"), 'h' );
 my $cancel_label = $m->interp->apply_escapes( loc("Cancel"), 'h' );
@@ -40,7 +36,7 @@ if ( RT->Config->Get('InlineEditPanelBehavior') ) {
     %inline_edit_behavior = %{ RT->Config->Get('InlineEditPanelBehavior')->{'RT::Ticket'} || {} };
 }
 
-my $modify_url = RT->Config->Get('WebPath')."/Ticket/ModifyRecurrence.html?id=".$Ticket->Id;
+my $modify_url = RT->Config->Get('WebPath')."/Ticket/ModifyRecurrence.html?id=".$TicketObj->Id;
 my $modify_inline
     = '<a class="inline-edit-toggle edit" href="%s">'
     . qq{<span class="fas fa-pencil-alt icon-bordered fa-2x" alt="$edit_label" data-toggle="tooltip" data-placement="top" data-original-title="$edit_label"></span>}
@@ -49,6 +45,9 @@ my $modify_inline
     . qq{<span class="fas fa-times icon-bordered fa-2x" alt="$cancel_label" data-toggle="tooltip" data-placement="top" data-original-title="$cancel_label"></span>}
     . '</a>';
 my $modify_basics = sprintf( $modify_inline, $m->interp->apply_escapes( $modify_url, 'h' ) );
-my $modify_behavior = $InlineEdit ? ($inline_edit_behavior{Recurrence} || $inline_edit_behavior{_default} || 'link') : 'hide';
 
+my $modify_behavior
+    = RT->Config->Get( 'InlineEdit', $session{CurrentUser} )
+    ? ( $inline_edit_behavior{Recurrence} || $inline_edit_behavior{_default} || 'link' )
+    : 'hide';
 </%init>
