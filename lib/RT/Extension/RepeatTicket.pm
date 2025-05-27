@@ -820,6 +820,55 @@ sub CheckCompleteDate {
     return 1;
 }
 
+if ( RT->Config->can('RegisterPluginConfig') ) {
+    RT->Config->RegisterPluginConfig(
+        Plugin  => 'RepeatTicket',
+        Content => [
+            {
+                Name => 'RepeatTicketCoexistentNumber',
+                Help => 'https://metacpan.org/pod/RT::Extension::RepeatTicket#$RepeatTicketCoexistentNumber',
+            },
+            {
+                Name => 'RepeatTicketLeadTime',
+                Help => 'https://metacpan.org/pod/RT::Extension::RepeatTicket#$RepeatTicketLeadTime',
+            },
+            {
+                Name => 'RepeatTicketSubjectFormat',
+                Help => 'https://metacpan.org/pod/RT::Extension::RepeatTicket#$RepeatTicketSubjectFormat',
+            },
+            {
+                Name => 'RepeatTicketPreviewNumber',
+                Help => 'https://metacpan.org/pod/RT::Extension::RepeatTicket#$RepeatTicketPreviewNumber',
+            },
+            {
+                Name => 'RepeatTicketSkipCustomFields',
+                Help => 'https://metacpan.org/pod/RT::Extension::RepeatTicket#@RepeatTicketSkipCustomFields',
+            },
+        ],
+        Meta    => {
+            RepeatTicketCoexistentNumber => {
+                Type   => 'SCALAR',
+                Widget => '/Widgets/Form/Integer',
+            },
+            RepeatTicketLeadTime => {
+                Type   => 'SCALAR',
+                Widget => '/Widgets/Form/Integer',
+            },
+            RepeatTicketSubjectFormat => {
+                Type   => 'SCALAR',
+                Widget => '/Widgets/Form/String',
+            },
+            RepeatTicketPreviewNumber => {
+                Type   => 'SCALAR',
+                Widget => '/Widgets/Form/Integer',
+            },
+            RepeatTicketSkipCustomFields => {
+                Type => 'ARRAY',
+            },
+        }
+    );
+}
+
 1;
 __END__
 
