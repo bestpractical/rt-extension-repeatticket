@@ -38,6 +38,7 @@ xt/cf.t
 xt/create_on_recurring_date.t
 xt/daily.t
 xt/end_conditions.t
+xt/links.t
 xt/monthly.t
 xt/on_complete.t
 xt/start_date.t

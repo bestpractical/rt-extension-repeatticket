@@ -1,5 +1,8 @@
 Revision history for RT-Extension-RepeatTicket
 
+3.01 2026-09-04
+ - Copy all links when a recurring ticket has multiple links of the same type
+
 3.00 2025-06-10
  - Update for RT 6.0 (RT 5.0 users need to use 2.* versions)
 
