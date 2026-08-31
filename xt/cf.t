@@ -42,7 +42,7 @@ $m->submit_form_ok(
 
 $m->text_like( qr/Ticket\s(\d+)\screated in queue/);
 
-my $ticket_id = $m->content =~ /Ticket\s(\d+)\screated in queue/;
+my ($ticket_id) = $m->content =~ /Ticket\s(\d+)\screated in queue/;
 ok( $ticket_id, "Created ticket with id: $ticket_id" );
 my $ticket = RT::Ticket->new(RT->SystemUser);
 $ticket->Load($ticket_id);

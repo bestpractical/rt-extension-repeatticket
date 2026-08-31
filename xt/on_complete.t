@@ -36,7 +36,7 @@ $m->submit_form_ok(
 
 $m->text_like( qr/Ticket\s(\d+)\screated in queue/);
 
-my $monthly_id = $m->content =~ /Ticket\s(\d+)\screated in queue/;
+my ($monthly_id) = $m->content =~ /Ticket\s(\d+)\screated in queue/;
 ok($monthly_id, "Created ticket with id: $monthly_id");
 
 my $second = $monthly_id + 1;

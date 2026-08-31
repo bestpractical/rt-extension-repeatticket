@@ -41,7 +41,7 @@ $m->submit_form_ok(
 
 $m->text_like( qr/Ticket\s(\d+)\screated in queue/);
 
-my $weekly_id = $m->content =~ /Ticket\s(\d+)\screated in queue/;
+my ($weekly_id) = $m->content =~ /Ticket\s(\d+)\screated in queue/;
 ok($weekly_id, "Created ticket with id: $weekly_id");
 
 GetThursday($day);

@@ -37,7 +37,7 @@ $m->submit_form_ok(
 
 $m->text_like( qr/Ticket\s(\d+)\screated in queue/);
 
-my $yearly_id = $m->content =~ /Ticket\s(\d+)\screated in queue/;
+my ($yearly_id) = $m->content =~ /Ticket\s(\d+)\screated in queue/;
 ok($yearly_id, "Created ticket with id: $yearly_id");
 
 my $ticket1 = RT::Ticket->new(RT->SystemUser);
