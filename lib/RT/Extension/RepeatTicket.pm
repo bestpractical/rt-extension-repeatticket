@@ -564,14 +564,14 @@ sub _RepeatTicket {
         my $refer_value = $get_link_value->( $refer, 'Target' );
         push @refers, $refer_value if defined $refer_value;
     }
-    $repeat->{RefersTo} = $repeat->{'new-RefersTo'} = join ' ', @refers;
+    $repeat->{RefersTo} = \@refers;
 
     my $refers_by = $repeat_ticket->ReferredToBy;
     while ( my $refer_by = $refers_by->Next ) {
         my $refer_by_value = $get_link_value->( $refer_by, 'Base' );
         push @refers_by, $refer_by_value if defined $refer_by_value;
     }
-    $repeat->{ReferredToBy} = $repeat->{'RefersTo-new'} = join ' ', @refers_by;
+    $repeat->{ReferredToBy} = \@refers_by;
 
     my $cfs = $repeat_ticket->QueueObj->TicketCustomFields();
     my @skip_custom_fields = @{ RT->Config->Get('RepeatTicketSkipCustomFields') || [] };
