@@ -3,7 +3,7 @@ use strict;
 
 package RT::Extension::RepeatTicket;
 
-our $VERSION = "2.04";
+our $VERSION = "2.05";
 
 use RT::Interface::Web;
 use DateTime;

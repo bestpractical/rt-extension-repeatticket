@@ -1,5 +1,8 @@
 Revision history for RT-Extension-RepeatTicket
 
+2.05 2026-09-04
+ - Copy all links when a recurring ticket has multiple links of the same type
+
 2.04 2025-01-29
  - Add configuration to specify custom fields to be skipped on repeat
 
