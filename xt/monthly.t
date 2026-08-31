@@ -19,6 +19,14 @@ $m->content_contains('Enable Recurrence');
 diag "Create a ticket with a recurrence in the General queue.";
 
 my $day = DateTime->now;
+
+# The recurrence is anchored to a day of the month, so a day that does not
+# exist in every month (the 29th-31st) makes the dates below unstable:
+# DateTime wraps $day->add( months => 1 ) forward into the next month, while
+# the recurrence rule skips the short month entirely. Clamp to a day every
+# month has; without this the test fails on 7 days a year.
+$day->set( day => 28 ) if $day->day > 28;
+
 $m->submit_form_ok(
     {   form_name => 'TicketCreate',
         fields    => {
