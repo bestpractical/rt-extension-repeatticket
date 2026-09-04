@@ -30,6 +30,48 @@ sub import {
         $args{'testing'} = 'RT::Extension::RepeatTicket';
     }
 
+    # The recurrence widget only renders when it is listed in the ticket page
+    # layouts, which is a manual admin step on a real install (Admin -> Page
+    # Layouts -> Ticket). Do the equivalent here so tests exercise a configured
+    # install. Site config is loaded before RT's defaults, so the layouts are
+    # not readable yet; append to them from a PostLoadCheck, which runs once
+    # all config is loaded. A no-op on RT versions without page layouts.
+    $args{'config'} = ( $args{'config'} || '' ) . <<'CONFIG';
+RT->Config->AddOption(
+    Name          => 'RepeatTicketTestPageLayout',
+    Section       => 'Hidden',
+    PostLoadCheck => sub {
+        my $config  = shift;
+        my $layouts = $config->Get('PageLayouts');
+        return unless ref $layouts eq 'HASH';
+
+        my $ticket = $layouts->{'RT::Ticket'} or return;
+
+        # Only Create and Display, the two pages this extension ships a
+        # widget for. Every named layout gets it, not just Default, since
+        # %PageLayoutMapping decides which one actually renders.
+        for my $page ( qw/Create Display/ ) {
+            my $page_layouts = $ticket->{$page} or next;
+            for my $name ( keys %$page_layouts ) {
+                my $groups   = $page_layouts->{$name}      or next;
+                my $elements = ( $groups->[0] || {} )->{Elements} or next;
+
+                # Elements is a list of columns (arrayrefs), or for
+                # single-column layouts a flat list of widget names.
+                my $column
+                    = ref $elements->[-1] eq 'ARRAY'
+                    ? $elements->[-1]
+                    : $elements;
+
+                next if grep { !ref $_ && $_ eq 'RepeatTicket' } @$column;
+                push @$column, 'RepeatTicket';
+            }
+        }
+        $config->Set( PageLayouts => %$layouts );
+    },
+);
+CONFIG
+
     $class->SUPER::import( %args );
     $class->export_to_level(1);
 
